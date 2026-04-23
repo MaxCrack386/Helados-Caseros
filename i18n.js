@@ -1,0 +1,313 @@
+const translations = {
+    es: {
+        // Static
+        app_title: "Helados Caseros",
+        nav_principal: "Principal",
+        nav_ventas: "Ventas",
+        nav_pedidos: "Pedidos",
+        nav_compras: "Compras",
+        nav_resumen: "Resumen de Cuentas",
+        nav_papelera: "Papelera",
+        tab_principal_title: "Resumen General",
+        stat_helados: "Helados Vendidos (Mes)",
+        stat_pedidos_mes: "Pedidos Realizados (Mes)",
+        stat_pedidos_pendientes: "Pedidos Pendientes",
+        stat_pagos_pendientes: "Pagos Pendientes",
+        chart_flujo_mes: "Flujo del Mes Actual",
+        list_entregas: "Próximas Entregas",
+        tab_ventas_title: "Ventas",
+        tab_ventas_desc: "Registro mensual de ventas directas.",
+        btn_nueva_venta: "Nueva Venta",
+        tab_pedidos_title: "Pedidos",
+        tab_pedidos_desc: "Gestión de encargos y entregas.",
+        btn_nuevo_pedido: "Nuevo Pedido",
+        tab_compras_title: "Compras",
+        tab_compras_desc: "Registro de gastos e insumos por mes.",
+        btn_nueva_compra: "Nueva Compra",
+        tab_resumen_title: "Resumen de Cuentas",
+        tab_resumen_desc: "Balance general de ingresos, gastos y ganancias.",
+        chart_evolucion: "Evolución Anual",
+        tab_papelera_title: "Papelera de Reciclaje",
+        tab_papelera_desc: "Registros eliminados recientemente.",
+        btn_vaciar_papelera: "Vaciar Papelera",
+        modal_venta_title: "Registrar Venta",
+        label_fecha: "Fecha",
+        label_cantidad: "Cantidad Total de Helados",
+        btn_cancelar: "Cancelar",
+        btn_guardar: "Guardar",
+        modal_compra_title: "Registrar Compra",
+        label_producto: "Producto/Insumo",
+        label_fecha_compra: "Fecha de Compra",
+        label_lugar_compra: "Lugar de Compra",
+        label_costo: "Costo Total ($)",
+        modal_pedido_title: "Nuevo Encargo / Pedido",
+        label_nombre: "Nombre de la persona/entidad",
+        label_fecha_encargo: "Fecha del encargo",
+        label_fecha_entrega: "Fecha de entrega",
+        label_lugar_entrega: "Lugar de entrega",
+        title_sabores: "Sabores y Cantidades",
+        label_maracuya: "Maracuyá",
+        label_mora: "Mora",
+        label_pina: "Piña",
+        label_coco: "Coco",
+        label_queso: "Queso",
+        label_total_helados: "Total Helados",
+        label_valor_helados: "Valor Helados ($)",
+        label_valor_transporte: "Valor Transporte ($)",
+        label_costo_total_pedido: "Costo Total del Pedido",
+        btn_guardar_pedido: "Guardar Pedido",
+        modal_detalle_title: "Detalles",
+        modal_confirm_title: "¿Estás seguro?",
+        modal_confirm_text: "¿Estás seguro de que quieres eliminar este registro?",
+        btn_no_cancelar: "No, cancelar",
+        btn_si_eliminar: "Sí, eliminar",
+        
+        // Dynamic
+        meses: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+        no_pending_orders: "No hay pedidos pendientes.",
+        days: "días",
+        day: "día",
+        late: "Atrasado",
+        for_date: "Para",
+        ice_creams: "helados",
+        helados_vendidos: "Helados Vendidos",
+        click_details: "Click para detalles",
+        pedido_prefix: "Pedido",
+        venta_directa: "Venta Directa",
+        ingresos: "Ingresos",
+        gastos: "Gastos",
+        ganancias: "Ganancias",
+        ventas_e_ingresos: "Ventas e Ingresos",
+        compras_y_gastos: "Compras y Gastos",
+        detalles_de: "Detalles de",
+        detalles_entrega: "Detalles de Entrega",
+        fecha_encargo: "Fecha encargo",
+        fecha_entrega: "Fecha entrega",
+        lugar: "Lugar",
+        estado: "Estado",
+        entregado: "Entregado",
+        pendiente: "Pendiente",
+        resumen_helados: "Resumen de Helados",
+        costos: "Costos",
+        helados_label: "Helados",
+        transporte_label: "Transporte",
+        editar_pedido: "Editar Pedido",
+        eliminar: "Eliminar",
+        editar: "Editar",
+        editar_venta: "Editar Venta",
+        editar_compra: "Editar Compra",
+        nuevo_encargo_pedido: "Nuevo Encargo / Pedido",
+        registrar_venta: "Registrar Venta",
+        registrar_compra: "Registrar Compra",
+        papelera_vacia: "La papelera está vacía.",
+        restaurar: "Restaurar",
+        eliminar_definitivamente: "Eliminar Definitivamente",
+        registro_eliminado: "Registro Eliminado",
+        confirm_eliminar_definitivamente: "¿Estás seguro de que quieres eliminar este registro de manera definitiva? No podrás recuperarlo.",
+        confirm_vaciar_papelera: "¿Estás seguro de que quieres vaciar la papelera? Todos los registros se perderán permanentemente.",
+        confirm_enviar_papelera: "¿Estás seguro de que quieres enviar este registro a la papelera?",
+        confirm_eliminar_multiples: "¿Estás seguro de que quieres eliminar los registros seleccionados?",
+        tipo_pedido: "Tipo de Pedido",
+        tipo_consumo: "Consumo",
+        tipo_reventa: "Reventa",
+        precio_consumo: "$2000 c/u",
+        precio_reventa: "$1600 c/u",
+        btn_volver: "Volver",
+        pagos_titulo: "Información de Pagos",
+        total_pedido: "Total del Pedido",
+        total_pagado: "Total Pagado",
+        saldo_pendiente: "Saldo Pendiente",
+        agregar_pago: "Agregar Pago",
+        metodo_pago: "Método de Pago",
+        efectivo: "Efectivo",
+        transferencia: "Transferencia",
+        valor_pago: "Valor Pagado ($)",
+        historial_pagos: "Historial de Pagos",
+        btn_guardar_pago: "Guardar Pago",
+        no_pagos: "No hay pagos registrados.",
+        deudores_titulo: "Pendientes de Pago",
+        no_deudores: "No hay clientes con pagos pendientes.",
+        debe: "Debe"
+    },
+    en: {
+        // Static
+        app_title: "Homemade Ice Cream",
+        nav_principal: "Dashboard",
+        nav_ventas: "Sales",
+        nav_pedidos: "Orders",
+        nav_compras: "Purchases",
+        nav_resumen: "Financial Summary",
+        nav_papelera: "Trash",
+        tab_principal_title: "General Overview",
+        stat_helados: "Ice Creams Sold (Month)",
+        stat_pedidos_mes: "Orders Placed (Month)",
+        stat_pedidos_pendientes: "Pending Orders",
+        stat_pagos_pendientes: "Pending Payments",
+        chart_flujo_mes: "Current Month Flow",
+        list_entregas: "Upcoming Deliveries",
+        tab_ventas_title: "Sales",
+        tab_ventas_desc: "Monthly record of direct sales.",
+        btn_nueva_venta: "New Sale",
+        tab_pedidos_title: "Orders",
+        tab_pedidos_desc: "Management of orders and deliveries.",
+        btn_nuevo_pedido: "New Order",
+        tab_compras_title: "Purchases",
+        tab_compras_desc: "Record of expenses and supplies by month.",
+        btn_nueva_compra: "New Purchase",
+        tab_resumen_title: "Financial Summary",
+        tab_resumen_desc: "Overall balance of income, expenses, and profits.",
+        chart_evolucion: "Annual Evolution",
+        tab_papelera_title: "Recycle Bin",
+        tab_papelera_desc: "Recently deleted records.",
+        btn_vaciar_papelera: "Empty Trash",
+        modal_venta_title: "Register Sale",
+        label_fecha: "Date",
+        label_cantidad: "Total Ice Creams",
+        btn_cancelar: "Cancel",
+        btn_guardar: "Save",
+        modal_compra_title: "Register Purchase",
+        label_producto: "Product/Supply",
+        label_fecha_compra: "Purchase Date",
+        label_lugar_compra: "Place of Purchase",
+        label_costo: "Total Cost ($)",
+        modal_pedido_title: "New Order",
+        label_nombre: "Person/Entity Name",
+        label_fecha_encargo: "Order Date",
+        label_fecha_entrega: "Delivery Date",
+        label_lugar_entrega: "Delivery Location",
+        title_sabores: "Flavors and Quantities",
+        label_maracuya: "Passion Fruit",
+        label_mora: "Blackberry",
+        label_pina: "Pineapple",
+        label_coco: "Coconut",
+        label_queso: "Cheese",
+        label_total_helados: "Total Ice Creams",
+        label_valor_helados: "Ice Creams Value ($)",
+        label_valor_transporte: "Transport Value ($)",
+        label_costo_total_pedido: "Total Order Cost",
+        btn_guardar_pedido: "Save Order",
+        modal_detalle_title: "Details",
+        modal_confirm_title: "Are you sure?",
+        modal_confirm_text: "Are you sure you want to delete this record?",
+        btn_no_cancelar: "No, cancel",
+        btn_si_eliminar: "Yes, delete",
+        
+        // Dynamic
+        meses: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+        no_pending_orders: "No pending orders.",
+        days: "days",
+        day: "day",
+        late: "Late",
+        for_date: "For",
+        ice_creams: "ice creams",
+        helados_vendidos: "Ice Creams Sold",
+        click_details: "Click for details",
+        pedido_prefix: "Order",
+        venta_directa: "Direct Sale",
+        ingresos: "Income",
+        gastos: "Expenses",
+        ganancias: "Profits",
+        ventas_e_ingresos: "Sales and Income",
+        compras_y_gastos: "Purchases and Expenses",
+        detalles_de: "Details for",
+        detalles_entrega: "Delivery Details",
+        fecha_encargo: "Order Date",
+        fecha_entrega: "Delivery Date",
+        lugar: "Location",
+        estado: "Status",
+        entregado: "Delivered",
+        pendiente: "Pending",
+        resumen_helados: "Ice Creams Summary",
+        costos: "Costs",
+        helados_label: "Ice Creams",
+        transporte_label: "Transport",
+        editar_pedido: "Edit Order",
+        eliminar: "Delete",
+        editar: "Edit",
+        editar_venta: "Edit Sale",
+        editar_compra: "Edit Purchase",
+        nuevo_encargo_pedido: "New Order",
+        registrar_venta: "Register Sale",
+        registrar_compra: "Register Purchase",
+        papelera_vacia: "The trash is empty.",
+        restaurar: "Restore",
+        eliminar_definitivamente: "Delete Permanently",
+        registro_eliminado: "Deleted Record",
+        confirm_eliminar_definitivamente: "Are you sure you want to permanently delete this record? It cannot be recovered.",
+        confirm_vaciar_papelera: "Are you sure you want to empty the trash? All records will be permanently lost.",
+        confirm_enviar_papelera: "Are you sure you want to move this record to the trash?",
+        confirm_eliminar_multiples: "Are you sure you want to delete the selected records?",
+        tipo_pedido: "Order Type",
+        tipo_consumo: "Consumption",
+        tipo_reventa: "Resale",
+        precio_consumo: "$2000 ea",
+        precio_reventa: "$1600 ea",
+        btn_volver: "Back",
+        pagos_titulo: "Payment Information",
+        total_pedido: "Total Order Price",
+        total_pagado: "Total Paid",
+        saldo_pendiente: "Remaining Balance",
+        agregar_pago: "Add Payment",
+        metodo_pago: "Payment Method",
+        efectivo: "Cash",
+        transferencia: "Transfer",
+        valor_pago: "Amount Paid ($)",
+        historial_pagos: "Payment History",
+        btn_guardar_pago: "Save Payment",
+        no_pagos: "No payments registered.",
+        deudores_titulo: "Pending Payments",
+        no_deudores: "No clients with pending payments.",
+        debe: "Owes"
+    }
+};
+
+let currentLang = localStorage.getItem('heladosLang') || 'es';
+
+function setLanguage(lang) {
+    if (!translations[lang]) return;
+    currentLang = lang;
+    localStorage.setItem('heladosLang', lang);
+    
+    // Update active button
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.getElementById(`lang-btn-${lang}`).classList.add('active');
+
+    // Update static HTML elements
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang][key]) {
+            // Check if it's an input with placeholder
+            if (el.tagName === 'INPUT' && el.type === 'text') {
+                // If we used placeholders, update them here
+            } else {
+                el.innerText = translations[lang][key];
+            }
+        }
+    });
+
+    // Update dynamic views if updateAllViews is available
+    if (typeof updateAllViews === 'function') {
+        updateAllViews();
+        // Update current modal if open
+        if (currentModalContext) {
+            if (currentModalContext.type === 'detalle-pedido') {
+                showOrderDetails(currentModalContext.id);
+            } else if (currentModalContext.type === 'detalle-papelera') {
+                showPapeleraDetails(currentModalContext.id);
+            } else {
+                showMonthDetails(currentModalContext.type, currentModalContext.monthKey);
+            }
+        }
+    }
+}
+
+function t(key) {
+    return translations[currentLang][key] || key;
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', () => {
+    setLanguage(currentLang);
+});
