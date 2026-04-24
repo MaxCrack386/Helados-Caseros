@@ -883,3 +883,42 @@ body {
     color: var(--primary);
     margin-bottom: 0.5rem;
 }
+
+/* --- LOGIN SCREEN --- */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: var(--bg-main);
+}
+
+.login-box {
+    background: var(--bg-card);
+    padding: 3rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 400px;
+    width: 90%;
+}
+
+.login-logo {
+    width: 150px;
+    height: auto;
+    margin-bottom: 1rem;
+}
+
+.login-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    font-size: 1.1rem;
+    padding: 0.8rem 1.5rem;
+}
+

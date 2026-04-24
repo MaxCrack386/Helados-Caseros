@@ -1,4 +1,20 @@
-// --- CONFIGURACIÓN Y ESTADO ---
+// --- CONFIGURACIÓN DE FIREBASE ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDvTCwrMja-EZGiQCZHsMws5i5lstLEKEY",
+  authDomain: "helados-caseros-d9cbe.firebaseapp.com",
+  projectId: "helados-caseros-d9cbe",
+  storageBucket: "helados-caseros-d9cbe.firebasestorage.app",
+  messagingSenderId: "461823186765",
+  appId: "1:461823186765:web:9904bbc1b813d3384c8904"
+};
+
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const SUPERADMIN_EMAIL = "yeisonvalencia@gmail.com";
+
+// --- ESTADO ---
 const PRECIO_HELADO = 2000;
 
 let appData = {
@@ -15,23 +31,108 @@ let currentModalContext = null;
 let editingItemId = null;
 let editingItemOrigen = null;
 
-// Inicialización de datos
-function loadData() {
-    const saved = localStorage.getItem('heladosData');
-    if (saved) {
-        appData = JSON.parse(saved);
-        if(!appData.papelera) appData.papelera = [];
-        if(appData.pedidos) {
-            appData.pedidos.forEach(p => {
-                if(!p.pagos) p.pagos = [];
-            });
+// --- AUTENTICACIÓN ---
+function loginWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch((error) => {
+        console.error("Error en login:", error);
+        document.getElementById('login-message').innerText = t('error_login') || "Error al iniciar sesión.";
+        document.getElementById('login-message').style.display = 'block';
+    });
+}
+
+function logout() {
+    auth.signOut().then(() => {
+        window.location.reload();
+    });
+}
+
+// Observador de estado de autenticación
+auth.onAuthStateChanged(async (user) => {
+    const loginContainer = document.getElementById('login-container');
+    const appContainer = document.getElementById('app-container');
+    const loginMessage = document.getElementById('login-message');
+
+    if (user) {
+        if (user.email === SUPERADMIN_EMAIL) {
+            // Es superadmin, permitir acceso
+            loginContainer.style.display = 'none';
+            appContainer.style.display = 'flex';
+            await loadData();
+        } else {
+            // No es superadmin, registrar solicitud y denegar acceso localmente
+            try {
+                await db.collection('access_requests').doc(user.uid).set({
+                    email: user.email,
+                    name: user.displayName,
+                    photoURL: user.photoURL,
+                    status: 'pending',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                loginMessage.innerText = "No tienes acceso. Se ha enviado una solicitud al administrador.";
+                loginMessage.style.display = 'block';
+            } catch (error) {
+                console.error("Error registrando solicitud:", error);
+                loginMessage.innerText = "Error verificando acceso.";
+                loginMessage.style.display = 'block';
+            }
+            auth.signOut();
         }
+    } else {
+        // No hay usuario, mostrar login
+        loginContainer.style.display = 'flex';
+        appContainer.style.display = 'none';
+        loginMessage.style.display = 'none';
+    }
+});
+
+// Inicialización de datos
+async function loadData() {
+    try {
+        const doc = await db.collection('data').doc('main').get();
+        if (doc.exists) {
+            appData = doc.data();
+            if(!appData.papelera) appData.papelera = [];
+            if(!appData.ventas) appData.ventas = [];
+            if(!appData.compras) appData.compras = [];
+            if(!appData.pedidos) appData.pedidos = [];
+            
+            if(appData.pedidos) {
+                appData.pedidos.forEach(p => {
+                    if(!p.pagos) p.pagos = [];
+                });
+            }
+        } else {
+            // Intenta cargar de localStorage la primera vez si existe
+            const saved = localStorage.getItem('heladosData');
+            if (saved) {
+                appData = JSON.parse(saved);
+                if(!appData.papelera) appData.papelera = [];
+                if(appData.pedidos) {
+                    appData.pedidos.forEach(p => {
+                        if(!p.pagos) p.pagos = [];
+                    });
+                }
+                // Guardar en firestore lo que había en local
+                await saveData();
+            } else {
+                // Estado vacío por defecto ya definido en let appData
+                await saveData();
+            }
+        }
+        updateAllViews();
+    } catch (error) {
+        console.error("Error loading data from Firestore:", error);
     }
 }
 
-function saveData() {
-    localStorage.setItem('heladosData', JSON.stringify(appData));
-    updateAllViews();
+async function saveData() {
+    try {
+        await db.collection('data').doc('main').set(appData);
+        updateAllViews();
+    } catch (error) {
+        console.error("Error saving data to Firestore:", error);
+    }
 }
 
 // --- UTILIDADES ---

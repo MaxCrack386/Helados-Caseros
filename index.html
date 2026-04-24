@@ -13,8 +13,20 @@
 </head>
 
 <body>
+    <!-- Login Container -->
+    <div id="login-container" class="login-container">
+        <div class="login-box">
+            <img src="Logo.png" alt="Helados Caseros Logo" class="login-logo">
+            <h2 data-i18n="app_title" style="margin-bottom: 2rem;">Helados caseros</h2>
+            <button id="btn-google-login" class="btn-primary login-btn" onclick="loginWithGoogle()">
+                <i class="fa-brands fa-google"></i> <span data-i18n="btn_login_google">Iniciar sesión con Google</span>
+            </button>
+            <p id="login-message" class="login-message" style="display: none; color: var(--danger); margin-top: 1rem; text-align: center; max-width: 300px;"></p>
+        </div>
+    </div>
+
     <!-- Contenedor Principal -->
-    <div id="app-container" class="app-container">
+    <div id="app-container" class="app-container" style="display: none;">
         <!-- Sidebar Overlay (Mobile) -->
         <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
@@ -43,6 +55,9 @@
                 <div style="margin-top: auto;">
                     <button class="nav-btn" data-tab="papelera" style="margin-bottom: 1rem;">
                         <i class="fa-solid fa-trash-can"></i> <span data-i18n="nav_papelera">Papelera</span>
+                    </button>
+                    <button class="nav-btn" onclick="logout()" style="margin-bottom: 1rem; color: var(--danger);">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span data-i18n="nav_logout">Cerrar Sesión</span>
                     </button>
                     <div class="lang-selector">
                         <button id="lang-btn-es" class="lang-btn active" onclick="setLanguage('es')">ES</button>
@@ -600,6 +615,9 @@
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="i18n.js"></script>
     <script src="app.js"></script>
