@@ -1,17 +1,19 @@
 // --- CONFIGURACIÓN DE FIREBASE ---
 const firebaseConfig = {
-  apiKey: "AIzaSyDvTCwrMja-EZGiQCZHsMws5i5lstLEKEY",
-  authDomain: "helados-caseros-d9cbe.firebaseapp.com",
-  projectId: "helados-caseros-d9cbe",
-  storageBucket: "helados-caseros-d9cbe.firebasestorage.app",
-  messagingSenderId: "461823186765",
-  appId: "1:461823186765:web:9904bbc1b813d3384c8904"
+  apiKey: "AIzaSyAeUQvRIvJoDQv2LDZnZTUapZsUeE66JWs",
+  authDomain: "helados-caseros-afe86.firebaseapp.com",
+  projectId: "helados-caseros-afe86",
+  storageBucket: "helados-caseros-afe86.firebasestorage.app",
+  messagingSenderId: "1057263224372",
+  appId: "1:1057263224372:web:17901f34d53023ecf16c61",
+  measurementId: "G-WE4V709TXH"
 };
 
 // Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+const analytics = firebase.analytics();
 const SUPERADMIN_EMAIL = "yeisonvalencia386@gmail.com";
 
 // --- ESTADO ---
