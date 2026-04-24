@@ -12,7 +12,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-const SUPERADMIN_EMAIL = "yeisonvalencia@gmail.com";
+const SUPERADMIN_EMAIL = "yeisonvalencia386@gmail.com";
 
 // --- ESTADO ---
 const PRECIO_HELADO = 2000;

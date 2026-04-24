@@ -138,7 +138,9 @@ const translations = {
         desc_contado: "Pago inmediato",
         tipo_fiado: "A Crédito (Fiado)",
         desc_fiado: "Pago pendiente",
-        btn_guardar_fiado: "Guardar Fiado"
+        btn_guardar_fiado: "Guardar Fiado",
+        btn_login_google: "Iniciar sesión con Google",
+        error_login: "Error al iniciar sesión. (¿Estás usando file:// o localhost sin autorizar?)"
     },
     en: {
         // Static
@@ -279,7 +281,9 @@ const translations = {
         desc_contado: "Immediate payment",
         tipo_fiado: "Credit",
         desc_fiado: "Pending payment",
-        btn_guardar_fiado: "Save Credit Sale"
+        btn_guardar_fiado: "Save Credit Sale",
+        btn_login_google: "Sign in with Google",
+        error_login: "Login error. (Are you using file:// or unauthorized localhost?)"
     }
 };
 
