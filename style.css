@@ -700,10 +700,116 @@ body {
 .papelera-actions .btn-del { color: var(--primary); }
 .papelera-actions button:hover { background: #e2e8f0; }
 
+/* Mobile Header & Overlay (Hidden on Desktop) */
+.mobile-header {
+    display: none;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.mobile-header h2 {
+    font-size: 1.5rem;
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.menu-toggle-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.menu-toggle-btn:hover {
+    color: var(--primary);
+}
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    z-index: 15;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(2px);
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .dashboard-grid { grid-template-columns: 1fr; }
     .form-row { flex-direction: column; }
+    
+    .mobile-header {
+        display: flex;
+    }
+    
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 20;
+    }
+    
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        padding: 1.5rem 1rem;
+    }
+    
+    .page-header.flex-between {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .modal {
+        width: 95%;
+        margin: 1rem;
+    }
+    
+    .modal-body {
+        padding: 1.5rem 1rem;
+    }
+    
+    .months-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .stat-card::before {
+        width: 100%;
+        height: 4px;
+        top: 0;
+        left: 0;
+    }
+    
+    .card-icon {
+        margin: 0 auto;
+    }
 }
 
 /* Language Selector */

@@ -127,7 +127,18 @@ const translations = {
         no_pagos: "No hay pagos registrados.",
         deudores_titulo: "Pendientes de Pago",
         no_deudores: "No hay clientes con pagos pendientes.",
-        debe: "Debe"
+        debe: "Debe",
+        progreso_helados_title: "Progreso de Helados",
+        total_solicitados: "Total Solicitados: ",
+        total_faltantes: "Total Faltantes: ",
+        btn_guardar_progreso: "Guardar Progreso",
+        hechos: "Hechos",
+        faltan_de: "faltan de",
+        tipo_contado: "Contado",
+        desc_contado: "Pago inmediato",
+        tipo_fiado: "A Crédito (Fiado)",
+        desc_fiado: "Pago pendiente",
+        btn_guardar_fiado: "Guardar Fiado"
     },
     en: {
         // Static
@@ -257,7 +268,18 @@ const translations = {
         no_pagos: "No payments registered.",
         deudores_titulo: "Pending Payments",
         no_deudores: "No clients with pending payments.",
-        debe: "Owes"
+        debe: "Owes",
+        progreso_helados_title: "Ice Cream Progress",
+        total_solicitados: "Total Ordered: ",
+        total_faltantes: "Total Remaining: ",
+        btn_guardar_progreso: "Save Progress",
+        hechos: "Made",
+        faltan_de: "remaining of",
+        tipo_contado: "Cash",
+        desc_contado: "Immediate payment",
+        tipo_fiado: "Credit",
+        desc_fiado: "Pending payment",
+        btn_guardar_fiado: "Save Credit Sale"
     }
 };
 

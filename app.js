@@ -57,6 +57,24 @@ function calculateDaysLeft(targetDate) {
 }
 
 // --- NAVEGACIÓN Y TABS ---
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (sidebar && overlay) {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+    }
+}
+
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (sidebar && overlay) {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+    }
+}
+
 document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -73,6 +91,11 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
         
         // Desactivar modo eliminar al cambiar de pestaña
         if(deleteMode) cancelDeleteMode(deleteContext);
+        
+        // Cerrar sidebar en móviles después de navegar
+        if (window.innerWidth <= 768) {
+            closeSidebar();
+        }
     });
 });
 
@@ -117,6 +140,17 @@ function closeModal(id) {
     if(id === 'modal-venta') {
         const h2 = document.querySelector(`#modal-venta h2`);
         if(h2) h2.innerText = t('registrar_venta');
+        
+        const step1 = document.getElementById('step-1-tipo-venta');
+        const formVenta = document.getElementById('form-venta');
+        const formFiado = document.getElementById('form-fiado');
+        if(step1) step1.style.display = 'flex';
+        if(formVenta) formVenta.style.display = 'none';
+        if(formFiado) formFiado.style.display = 'none';
+        const fiadoTotH = document.getElementById('fiado-total-helados');
+        const fiadoTotC = document.getElementById('fiado-costo-total');
+        if(fiadoTotH) fiadoTotH.value = '0';
+        if(fiadoTotC) fiadoTotC.value = '0';
     }
     if(id === 'modal-compra') {
         const h2 = document.querySelector(`#modal-compra h2`);
@@ -194,11 +228,13 @@ function renderPrincipal() {
     }
 
     // e. Listado de deudores (Pendientes de pago)
-    const debtorsListEl = document.getElementById('debtors-list');
-    debtorsListEl.innerHTML = '';
+    const debtorsPedidosEl = document.getElementById('debtors-pedidos-list');
+    const debtorsFiadosEl = document.getElementById('debtors-fiados-list');
+    if(debtorsPedidosEl) debtorsPedidosEl.innerHTML = '';
+    if(debtorsFiadosEl) debtorsFiadosEl.innerHTML = '';
     
     // Find orders with remaining balance
-    const debtors = appData.pedidos.filter(p => {
+    const pedidosDeudores = appData.pedidos.filter(p => {
         const totalPedido = p.costoTotal || 0;
         const totalPagado = (p.pagos || []).reduce((sum, pago) => sum + pago.valor, 0);
         return (totalPedido - totalPagado) > 0;
@@ -208,45 +244,119 @@ function renderPrincipal() {
         return saldoB - saldoA; // Sort by highest debt
     });
 
-    document.getElementById('stat-pagos-pendientes').innerText = debtors.length;
+    const fiadosDeudores = appData.ventas.filter(v => {
+        if(v.tipo !== 'Fiado') return false;
+        const totalPedido = v.costoTotal || 0;
+        const totalPagado = (v.pagos || []).reduce((sum, pago) => sum + pago.valor, 0);
+        return (totalPedido - totalPagado) > 0;
+    }).sort((a,b) => {
+        const saldoA = (a.costoTotal || 0) - (a.pagos || []).reduce((sum, pago) => sum + pago.valor, 0);
+        const saldoB = (b.costoTotal || 0) - (b.pagos || []).reduce((sum, pago) => sum + pago.valor, 0);
+        return saldoB - saldoA;
+    });
 
-    if (debtors.length === 0) {
-        debtorsListEl.innerHTML = `<li><p style="color: var(--text-muted); padding: 1rem 0;">${t('no_deudores')}</p></li>`;
-        debtorsListEl.style.display = 'block';
+    document.getElementById('stat-pagos-pendientes').innerText = pedidosDeudores.length + fiadosDeudores.length;
+
+    const renderDebtorItem = (p) => {
+        const totalPedido = p.costoTotal || 0;
+        const totalPagado = (p.pagos || []).reduce((sum, pago) => sum + pago.valor, 0);
+        const saldoPendiente = totalPedido - totalPagado;
+        return `
+            <li style="background: var(--bg-main); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; position: relative;">
+                <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                    <strong style="font-size: 1.1rem; color: var(--text-main);">${p.nombre}</strong>
+                    <button class="btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.9rem;" onclick="showPaymentInfo('${p.id}')">
+                        <i class="fa-solid fa-dollar-sign"></i>
+                    </button>
+                </div>
+                <div style="width: 100%; display: flex; justify-content: space-between; font-size: 0.95rem;">
+                    <span style="color: var(--text-muted);">${p.fechaEntrega ? t('fecha_entrega') + ': ' + p.fechaEntrega : t('label_fecha') + ': ' + p.fecha}</span>
+                    <span style="font-weight: 600; color: var(--primary);">${t('debe')}: ${formatCurrency(saldoPendiente)}</span>
+                </div>
+                <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin-top: 0.5rem;">
+                    <div style="height: 100%; background: var(--success); width: ${(totalPagado/totalPedido)*100}%;"></div>
+                </div>
+                <div style="width: 100%; text-align: right; font-size: 0.8rem; color: var(--text-muted);">
+                    ${formatCurrency(totalPagado)} / ${formatCurrency(totalPedido)}
+                </div>
+            </li>
+        `;
+    };
+
+    if (pedidosDeudores.length === 0) {
+        if(debtorsPedidosEl) debtorsPedidosEl.innerHTML = `<li><p style="color: var(--text-muted); padding: 1rem 0;">${t('no_deudores')}</p></li>`;
     } else {
-        debtorsListEl.style.display = 'grid';
-        debtors.forEach(p => {
-            const totalPedido = p.costoTotal || 0;
-            const totalPagado = (p.pagos || []).reduce((sum, pago) => sum + pago.valor, 0);
-            const saldoPendiente = totalPedido - totalPagado;
-            
-            debtorsListEl.innerHTML += `
-                <li style="background: var(--bg-main); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; position: relative;">
-                    <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-                        <strong style="font-size: 1.1rem; color: var(--text-main);">${p.nombre}</strong>
-                        <button class="btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.9rem;" onclick="showPaymentInfo('${p.id}')">
-                            <i class="fa-solid fa-dollar-sign"></i>
-                        </button>
-                    </div>
-                    <div style="width: 100%; display: flex; justify-content: space-between; font-size: 0.95rem;">
-                        <span style="color: var(--text-muted);">${t('fecha_entrega')}: ${p.fechaEntrega}</span>
-                        <span style="font-weight: 600; color: var(--primary);">${t('debe')}: ${formatCurrency(saldoPendiente)}</span>
-                    </div>
-                    <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin-top: 0.5rem;">
-                        <div style="height: 100%; background: var(--success); width: ${(totalPagado/totalPedido)*100}%;"></div>
-                    </div>
-                    <div style="width: 100%; text-align: right; font-size: 0.8rem; color: var(--text-muted);">
-                        ${formatCurrency(totalPagado)} / ${formatCurrency(totalPedido)}
-                    </div>
-                </li>
-            `;
-        });
+        if(debtorsPedidosEl) pedidosDeudores.forEach(p => debtorsPedidosEl.innerHTML += renderDebtorItem(p));
+    }
+
+    if (fiadosDeudores.length === 0) {
+        if(debtorsFiadosEl) debtorsFiadosEl.innerHTML = `<li><p style="color: var(--text-muted); padding: 1rem 0;">${t('no_deudores')}</p></li>`;
+    } else {
+        if(debtorsFiadosEl) fiadosDeudores.forEach(p => debtorsFiadosEl.innerHTML += renderDebtorItem(p));
     }
 
     renderMainChart();
 }
 
 // 2. VENTAS
+function selectTipoVenta(tipo) {
+    document.getElementById('step-1-tipo-venta').style.display = 'none';
+    if(tipo === 'Contado') {
+        document.getElementById('form-venta').style.display = 'block';
+        document.querySelector(`#modal-venta h2`).innerText = t('tipo_contado');
+    } else {
+        document.getElementById('form-fiado').style.display = 'block';
+        document.querySelector(`#modal-venta h2`).innerText = t('tipo_fiado');
+    }
+}
+
+function volverPaso1Venta() {
+    document.getElementById('step-1-tipo-venta').style.display = 'flex';
+    document.getElementById('form-venta').style.display = 'none';
+    document.getElementById('form-fiado').style.display = 'none';
+    document.querySelector(`#modal-venta h2`).innerText = t('registrar_venta');
+}
+
+function calculateFiadoTotals() {
+    const sabores = ['maracuya', 'mora', 'pina', 'coco', 'queso'];
+    let totalHelados = 0;
+    sabores.forEach(s => {
+        totalHelados += parseInt(document.getElementById(`fiado-sab-${s}`).value || 0);
+    });
+    
+    const valorHelados = totalHelados * PRECIO_HELADO;
+    document.getElementById('fiado-total-helados').value = totalHelados;
+    document.getElementById('fiado-costo-total').value = valorHelados;
+}
+
+document.getElementById('form-fiado').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const sabores = {
+        maracuya: parseInt(document.getElementById('fiado-sab-maracuya').value || 0),
+        mora: parseInt(document.getElementById('fiado-sab-mora').value || 0),
+        pina: parseInt(document.getElementById('fiado-sab-pina').value || 0),
+        coco: parseInt(document.getElementById('fiado-sab-coco').value || 0),
+        queso: parseInt(document.getElementById('fiado-sab-queso').value || 0)
+    };
+    
+    const nuevoFiado = {
+        id: generateId(),
+        fecha: document.getElementById('fiado-fecha').value,
+        nombre: document.getElementById('fiado-nombre').value,
+        sabores: sabores,
+        cantidad: parseInt(document.getElementById('fiado-total-helados').value),
+        costoTotal: parseInt(document.getElementById('fiado-costo-total').value),
+        tipo: 'Fiado',
+        pagos: []
+    };
+    appData.ventas.push(nuevoFiado);
+    saveData();
+    closeModal('modal-venta');
+    if (currentModalContext && (currentModalContext.type === 'ventas' || currentModalContext.type === 'resumen')) {
+        showMonthDetails(currentModalContext.type, currentModalContext.monthKey);
+    }
+});
+
 document.getElementById('form-venta').addEventListener('submit', (e) => {
     e.preventDefault();
     const currentEditId = editingItemId;
@@ -277,10 +387,39 @@ document.getElementById('form-venta').addEventListener('submit', (e) => {
 });
 
 function renderVentas() {
-    const grouped = groupByMonth(appData.ventas, 'fecha');
-    // Agregar helados entregados y pagos
+    const grouped = {};
+    
+    appData.ventas.forEach(v => {
+        const m = getMonthYear(v.fecha);
+        if(!grouped[m]) grouped[m] = [];
+        grouped[m].push({
+            id: v.id,
+            fecha: v.fecha,
+            cantidad: v.cantidad,
+            tipo: v.tipo === 'Fiado' ? 'Fiado' : 'Directa',
+            detalle: v.tipo === 'Fiado' ? v.nombre : 'Venta Directa',
+            ingreso: v.tipo === 'Fiado' ? 0 : v.cantidad * PRECIO_HELADO,
+            origen: 'ventas',
+            origenObj: v
+        });
+        
+        if (v.tipo === 'Fiado' && v.pagos) {
+            v.pagos.forEach(pago => {
+                const mPago = getMonthYear(pago.fecha);
+                if(!grouped[mPago]) grouped[mPago] = [];
+                grouped[mPago].push({
+                    fecha: pago.fecha,
+                    cantidad: 0,
+                    tipo: 'PagoVentaFiado',
+                    detalle: v.nombre + ` (${pago.metodo})`,
+                    ingreso: pago.valor,
+                    origenId: v.id
+                });
+            });
+        }
+    });
+
     appData.pedidos.forEach(p => {
-        // Para conteo de helados, usamos la fecha de entrega (si fue entregado)
         if(p.entregado) {
             const m = getMonthYear(p.fechaEntrega);
             if(!grouped[m]) grouped[m] = [];
@@ -292,7 +431,6 @@ function renderVentas() {
                 ingreso: 0 // El ingreso real ahora viene de los pagos
             });
         }
-        // Para conteo de ingresos, usamos la fecha de cada pago
         if(p.pagos) {
             p.pagos.forEach(pago => {
                 const mPago = getMonthYear(pago.fecha);
@@ -314,10 +452,7 @@ function renderVentas() {
     
     Object.keys(grouped).sort(sortMonthsReverse).forEach(month => {
         let totalHelados = grouped[month].reduce((sum, item) => sum + item.cantidad, 0);
-        let totalIngresos = grouped[month].reduce((sum, item) => {
-            if(item.tipo === 'EntregaPedido' || item.tipo === 'PagoPedido') return sum + item.ingreso;
-            return sum + (item.cantidad * PRECIO_HELADO); // Venta directa
-        }, 0);
+        let totalIngresos = grouped[month].reduce((sum, item) => sum + item.ingreso, 0);
 
         grid.innerHTML += `
             <div class="card month-card" onclick='showMonthDetails("ventas", "${month}")'>
@@ -456,9 +591,14 @@ function renderPedidos() {
                 <i class="fa-solid fa-dollar-sign"></i>
             </button>
         `;
+        const progressBtnHtml = `
+            <button class="btn-primary" style="background-color: #f59e0b; border-radius: var(--border-radius); border: none; color: white; padding: 0.5rem 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-right: 0.5rem;" onclick="showIceCreamProgress('${p.id}'); event.stopPropagation();" title="${t('progreso_helados_title') || 'Progreso de helados'}">
+                <i class="fa-solid fa-ice-cream"></i>
+            </button>
+        `;
 
         if(p.entregado) {
-            statusHtml = `<span class="countdown done">${t('entregado')}</span>${paymentBtnHtml}`;
+            statusHtml = `<div style="display:flex; align-items:center;">${progressBtnHtml}<span class="countdown done">${t('entregado')}</span>${paymentBtnHtml}</div>`;
         } else {
             let colorClass = 'countdown';
             let dayText = days === 1 ? `1 ${t('day')}` : `${days} ${t('days')}`;
@@ -467,6 +607,7 @@ function renderPedidos() {
             statusHtml = `
                 <span class="${colorClass}">${dayText}</span>
                 <div style="display:flex;">
+                    ${progressBtnHtml}
                     <button class="btn-success" onclick="markAsDelivered('${p.id}'); event.stopPropagation();">
                         <i class="fa-solid fa-check"></i> ${t('entregado')}
                     </button>
@@ -558,12 +699,38 @@ function showOrderDetails(id) {
     openModal('modal-detalle');
 }
 
-// --- PAGOS DE PEDIDOS ---
+// --- PAGOS DE PEDIDOS Y VENTAS ---
 function showPaymentInfo(id) {
-    const p = appData.pedidos.find(x => x.id === id);
+    let p = appData.pedidos.find(x => x.id === id);
+    let type = 'pedido';
+    if(!p) {
+        p = appData.ventas.find(x => x.id === id);
+        type = 'venta';
+    }
     if(!p) return;
     
     document.getElementById('pago-pedido-id').value = p.id;
+    document.getElementById('form-pago').dataset.type = type;
+    
+    const resumenContainer = document.getElementById('pago-resumen-sabores');
+    if (p.sabores) {
+        const saboresText = Object.entries(p.sabores)
+            .filter(([k,v]) => v > 0)
+            .map(([k,v]) => `${v} ${t('label_'+k) || k}`)
+            .join(', ');
+        const totalHelados = p.cantidadTotal || p.cantidad || 0;
+        
+        resumenContainer.style.display = 'block';
+        resumenContainer.innerHTML = `
+            <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--border-radius); border: 1px solid var(--border-color);">
+                <h4 style="margin-bottom: 0.5rem; color: var(--text-main);">${t('resumen_helados') || 'Resumen de Helados'}</h4>
+                <p><strong>${t('total_helados') || 'Total Helados'}:</strong> ${totalHelados}</p>
+                <p><strong>${t('sabores') || 'Sabores'}:</strong> ${saboresText}</p>
+            </div>
+        `;
+    } else {
+        resumenContainer.style.display = 'none';
+    }
     
     const totalPedido = p.costoTotal || 0;
     const totalPagado = (p.pagos || []).reduce((sum, pago) => sum + pago.valor, 0);
@@ -600,7 +767,10 @@ function showPaymentInfo(id) {
 document.getElementById('form-pago').addEventListener('submit', (e) => {
     e.preventDefault();
     const pedidoId = document.getElementById('pago-pedido-id').value;
-    const p = appData.pedidos.find(x => x.id === pedidoId);
+    const type = document.getElementById('form-pago').dataset.type;
+    const listData = type === 'venta' ? appData.ventas : appData.pedidos;
+    const p = listData.find(x => x.id === pedidoId);
+    
     if(p) {
         if(!p.pagos) p.pagos = [];
         const nuevoPago = {
@@ -622,7 +792,9 @@ document.getElementById('form-pago').addEventListener('submit', (e) => {
 });
 
 function deletePayment(pedidoId, pagoId) {
-    const p = appData.pedidos.find(x => x.id === pedidoId);
+    let p = appData.pedidos.find(x => x.id === pedidoId);
+    if (!p) p = appData.ventas.find(x => x.id === pedidoId);
+    
     if(p && p.pagos) {
         const idx = p.pagos.findIndex(x => x.id === pagoId);
         if(idx > -1) {
@@ -701,7 +873,17 @@ function calculateBalances() {
     appData.ventas.forEach(v => {
         const m = getMonthYear(v.fecha);
         if(!balances[m]) balances[m] = { ingresos: 0, gastos: 0 };
-        balances[m].ingresos += (v.cantidad * PRECIO_HELADO);
+        if (v.tipo !== 'Fiado') {
+            balances[m].ingresos += (v.cantidad * PRECIO_HELADO);
+        }
+        
+        if (v.tipo === 'Fiado' && v.pagos) {
+            v.pagos.forEach(pago => {
+                const mPago = getMonthYear(pago.fecha);
+                if(!balances[mPago]) balances[mPago] = { ingresos: 0, gastos: 0 };
+                balances[mPago].ingresos += pago.valor;
+            });
+        }
     });
 
     // Ingresos Pagos de Pedidos
@@ -753,7 +935,25 @@ function showMonthDetails(type, monthKey) {
 
     if(type === 'ventas' || type === 'resumen') {
         let items = [];
-        appData.ventas.forEach(v => { if(getMonthYear(v.fecha) === monthKey) items.push({...v, ingreso: v.cantidad*PRECIO_HELADO, origen: 'ventas'}); });
+        appData.ventas.forEach(v => { 
+            let fiadoInMonth = false;
+            if(getMonthYear(v.fecha) === monthKey) {
+                if (v.tipo === 'Fiado') {
+                    fiadoInMonth = true;
+                } else {
+                    items.push({...v, ingreso: v.cantidad*PRECIO_HELADO, origen: 'ventas'}); 
+                }
+            }
+            if(v.tipo === 'Fiado' && v.pagos) {
+                if(v.pagos.some(pago => getMonthYear(pago.fecha) === monthKey)) {
+                    fiadoInMonth = true;
+                }
+            }
+            
+            if (fiadoInMonth && v.tipo === 'Fiado') {
+                items.push({...v, ingreso: 0, origen: 'ventas', detalleAdicional: v.nombre});
+            }
+        });
         appData.pedidos.forEach(p => {
             if(p.pagos) {
                 p.pagos.forEach(pago => {
@@ -774,34 +974,59 @@ function showMonthDetails(type, monthKey) {
         
         items.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
         if(items.length > 0) {
-            contenedor.innerHTML += `<h3 class="section-title">${t('ventas_e_ingresos')}</h3>`;
+            let htmlContado = '';
+            let htmlCredito = '';
+            
             items.forEach(i => {
                 let checkboxHtml = '';
                 if(deleteMode && deleteContext === 'modal') {
                     // No permitir borrar pagos desde este listado directamente con checkbox para evitar bugs complejos
                 }
 
-                if(i.tipo === 'PagoPedido') {
-                    contenedor.innerHTML += `
+                let itemHtml = '';
+                if(i.tipo === 'PagoPedido' || i.tipo === 'PagoVentaFiado') {
+                    const refId = i.tipo === 'PagoPedido' ? i.pedidoId : i.ventaId;
+                    const refOrigen = i.tipo === 'PagoPedido' ? 'pedidos' : 'ventas';
+                    const extras = ` | ${Math.floor(i.ingreso / PRECIO_HELADO)} helados`;
+                    itemHtml = `
                         <div class="detalle-item venta-item" style="display:flex;">
                             <div style="flex:1; display:flex; justify-content:space-between; align-items:center;">
                                 <div class="detalle-item-info">
-                                    <h4>Pago de Pedido: ${i.detalle}</h4>
-                                    <p>${i.fecha}</p>
+                                    <h4>Pago: ${i.detalle}</h4>
+                                    <p>${i.fecha}${extras}</p>
                                 </div>
                                 <div style="display:flex; align-items:center; gap: 1rem;">
                                     <div class="detalle-item-valor positive">+${formatCurrency(i.ingreso)}</div>
                                     <div class="item-actions" style="display:flex; gap:0.5rem;">
-                                        <button onclick="showPaymentInfo('${i.pedidoId}')" title="${t('pagos_titulo')}" style="background:none; border:none; color:var(--info); cursor:pointer; font-size:1.2rem; padding:0.2rem;"><i class="fa-solid fa-dollar-sign"></i></button>
-                                        <button onclick="editItemDirectly('${i.pedidoId}', 'pedidos')" title="${t('editar')}" style="background:none; border:none; color:var(--info); cursor:pointer; font-size:1.2rem; padding:0.2rem;"><i class="fa-solid fa-pencil"></i></button>
-                                        <button onclick="deleteItemDirectly('${i.pedidoId}', 'pedidos')" title="${t('eliminar')}" style="background:none; border:none; color:var(--primary); cursor:pointer; font-size:1.2rem; padding:0.2rem;"><i class="fa-solid fa-trash"></i></button>
+                                        <button onclick="showPaymentInfo('${refId}')" title="${t('pagos_titulo')}" style="background:none; border:none; color:var(--info); cursor:pointer; font-size:1.2rem; padding:0.2rem;"><i class="fa-solid fa-dollar-sign"></i></button>
+                                        <button onclick="editItemDirectly('${refId}', '${refOrigen}')" title="${t('editar')}" style="background:none; border:none; color:var(--info); cursor:pointer; font-size:1.2rem; padding:0.2rem;"><i class="fa-solid fa-pencil"></i></button>
+                                        <button onclick="deleteItemDirectly('${refId}', '${refOrigen}')" title="${t('eliminar')}" style="background:none; border:none; color:var(--primary); cursor:pointer; font-size:1.2rem; padding:0.2rem;"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else if (i.tipo === 'Fiado') {
+                    itemHtml = `
+                        <div class="detalle-item venta-item" style="display:flex; border-left: 4px solid var(--warning);">
+                            ${checkboxHtml}
+                            <div style="flex:1; display:flex; justify-content:space-between; align-items:center;">
+                                <div class="detalle-item-info">
+                                    <h4>Venta a Crédito: ${i.detalleAdicional}</h4>
+                                    <p>${i.fecha} | ${i.cantidad} ${t('ice_creams')} (Por pagar)</p>
+                                </div>
+                                <div style="display:flex; align-items:center; gap: 1rem;">
+                                    <div class="detalle-item-valor" style="color: var(--warning);">${formatCurrency(i.costoTotal)}</div>
+                                    <div class="item-actions" style="display:flex; gap:0.5rem;">
+                                        <button onclick="showPaymentInfo('${i.id}')" title="${t('pagos_titulo')}" style="background:none; border:none; color:var(--info); cursor:pointer; font-size:1.2rem; padding:0.2rem;"><i class="fa-solid fa-dollar-sign"></i></button>
+                                        <button onclick="deleteItemDirectly('${i.id}', '${i.origen}')" title="${t('eliminar')}" style="background:none; border:none; color:var(--primary); cursor:pointer; font-size:1.2rem; padding:0.2rem;"><i class="fa-solid fa-trash"></i></button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     `;
                 } else {
-                    contenedor.innerHTML += `
+                    itemHtml = `
                         <div class="detalle-item venta-item" style="display:flex;">
                             ${checkboxHtml}
                             <div style="flex:1; display:flex; justify-content:space-between; align-items:center;">
@@ -820,7 +1045,26 @@ function showMonthDetails(type, monthKey) {
                         </div>
                     `;
                 }
+                
+                if (i.tipo === 'Fiado' || i.tipo === 'PagoVentaFiado') {
+                    htmlCredito += itemHtml;
+                } else {
+                    htmlContado += itemHtml;
+                }
             });
+            
+            contenedor.innerHTML += `
+                <div style="display:flex; gap:1rem; margin-bottom: 1.5rem;">
+                    <button id="btn-tab-contado" class="btn-primary" style="flex:1;" onclick="document.getElementById('list-contado').style.display='block'; document.getElementById('list-credito').style.display='none'; this.classList.replace('btn-secondary', 'btn-primary'); document.getElementById('btn-tab-credito').classList.replace('btn-primary', 'btn-secondary');">Contado / Pedidos</button>
+                    <button id="btn-tab-credito" class="btn-secondary" style="flex:1;" onclick="document.getElementById('list-credito').style.display='block'; document.getElementById('list-contado').style.display='none'; this.classList.replace('btn-secondary', 'btn-primary'); document.getElementById('btn-tab-contado').classList.replace('btn-primary', 'btn-secondary');">A Crédito (Fiado)</button>
+                </div>
+                <div id="list-contado">
+                    ${htmlContado || '<p style="color:var(--text-muted); text-align:center;">No hay ventas de contado en este mes.</p>'}
+                </div>
+                <div id="list-credito" style="display:none;">
+                    ${htmlCredito || '<p style="color:var(--text-muted); text-align:center;">No hay ventas a crédito en este mes.</p>'}
+                </div>
+            `;
         }
     }
 
@@ -977,7 +1221,101 @@ function sortMonthsReverse(a, b) {
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
     updateAllViews();
+
 });
+
+// --- PROGRESO DE HELADOS ---
+function showIceCreamProgress(id) {
+    const p = appData.pedidos.find(x => x.id === id);
+    if(!p) return;
+    
+    if(!p.saboresHechos) {
+        p.saboresHechos = { maracuya: 0, mora: 0, pina: 0, coco: 0, queso: 0 };
+    }
+    
+    document.getElementById('progreso-pedido-id').value = id;
+    
+    let totalSolicitados = 0;
+    let totalHechos = 0;
+    
+    const list = document.getElementById('progreso-sabores-list');
+    list.innerHTML = '';
+    
+    const sabores = ['maracuya', 'mora', 'pina', 'coco', 'queso'];
+    sabores.forEach(sabor => {
+        const solicitados = p.sabores[sabor] || 0;
+        if (solicitados > 0) {
+            const hechos = p.saboresHechos[sabor] || 0;
+            const faltantes = solicitados - hechos;
+            
+            totalSolicitados += solicitados;
+            totalHechos += hechos;
+            
+            list.innerHTML += `
+                <div style="background: var(--bg-main); padding: 1rem; border-radius: var(--border-radius); border: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <strong style="text-transform: capitalize;">${t('label_' + sabor) || sabor}</strong>
+                        <span><span style="color: var(--warning); font-weight: bold;" id="faltante-${sabor}">${faltantes}</span> ${t('faltan_de') || 'faltan de'} ${solicitados}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <label>${t('hechos') || 'Hechos'}:</label>
+                        <input type="number" id="input-hechos-${sabor}" value="${hechos}" min="0" max="${solicitados}" style="width: 80px;" oninput="updateProgresoPreview('${sabor}', ${solicitados})">
+                        <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                            <div id="bar-${sabor}" style="height: 100%; background: var(--success); width: ${(hechos/solicitados)*100}%;"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    });
+    
+    document.getElementById('progreso-total-solicitados').innerText = totalSolicitados;
+    document.getElementById('progreso-total-faltantes').innerText = totalSolicitados - totalHechos;
+    
+    openModal('modal-progreso-helados');
+}
+
+function updateProgresoPreview(sabor, solicitados) {
+    const val = parseInt(document.getElementById(`input-hechos-${sabor}`).value) || 0;
+    const boundedVal = Math.min(Math.max(val, 0), solicitados);
+    const faltantes = solicitados - boundedVal;
+    
+    document.getElementById(`faltante-${sabor}`).innerText = faltantes;
+    document.getElementById(`bar-${sabor}`).style.width = `${(boundedVal/solicitados)*100}%`;
+    
+    const pId = document.getElementById('progreso-pedido-id').value;
+    const p = appData.pedidos.find(x => x.id === pId);
+    let totalFaltantes = 0;
+    ['maracuya', 'mora', 'pina', 'coco', 'queso'].forEach(s => {
+        const sol = p.sabores[s] || 0;
+        if (sol > 0) {
+            const input = document.getElementById(`input-hechos-${s}`);
+            const inputVal = input ? (parseInt(input.value) || 0) : (p.saboresHechos[s] || 0);
+            const bVal = Math.min(Math.max(inputVal, 0), sol);
+            totalFaltantes += (sol - bVal);
+        }
+    });
+    document.getElementById('progreso-total-faltantes').innerText = totalFaltantes;
+}
+
+function guardarProgresoHelados() {
+    const id = document.getElementById('progreso-pedido-id').value;
+    const p = appData.pedidos.find(x => x.id === id);
+    if(p) {
+        if(!p.saboresHechos) p.saboresHechos = { maracuya: 0, mora: 0, pina: 0, coco: 0, queso: 0 };
+        ['maracuya', 'mora', 'pina', 'coco', 'queso'].forEach(sabor => {
+            if (p.sabores[sabor] > 0) {
+                const input = document.getElementById(`input-hechos-${sabor}`);
+                if (input) {
+                    const val = parseInt(input.value) || 0;
+                    p.saboresHechos[sabor] = Math.min(Math.max(val, 0), p.sabores[sabor]);
+                }
+            }
+        });
+        saveData();
+        closeModal('modal-progreso-helados');
+    }
+}
 
 // --- MODO ELIMINACIÓN Y PAPELERA ---
 function toggleDeleteMode(context) {
