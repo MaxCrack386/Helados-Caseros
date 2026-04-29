@@ -307,8 +307,10 @@ function closeModal(id) {
         if(h2) h2.innerText = t('registrar_compra');
     }
     
-    editingItemId = null;
-    editingItemOrigen = null;
+    if (id === 'modal-venta' || id === 'modal-pedido' || id === 'modal-compra') {
+        editingItemId = null;
+        editingItemOrigen = null;
+    }
 }
 
 // --- ACTUALIZACIÓN DE VISTAS ---
@@ -497,11 +499,17 @@ document.getElementById('form-fiado').addEventListener('submit', (e) => {
     if (currentEditId && currentEditOrigen === 'ventas') {
         const index = appData.ventas.findIndex(v => v.id === currentEditId);
         if (index > -1) {
-            appData.ventas[index].fecha = document.getElementById('fiado-fecha').value;
-            appData.ventas[index].nombre = document.getElementById('fiado-nombre').value;
-            appData.ventas[index].sabores = sabores;
-            appData.ventas[index].cantidad = parseInt(document.getElementById('fiado-total-helados').value);
-            appData.ventas[index].costoTotal = parseInt(document.getElementById('fiado-costo-total').value);
+            const oldPagos = appData.ventas[index].pagos || [];
+            appData.ventas[index] = {
+                id: currentEditId,
+                fecha: document.getElementById('fiado-fecha').value,
+                nombre: document.getElementById('fiado-nombre').value,
+                sabores: sabores,
+                cantidad: parseInt(document.getElementById('fiado-total-helados').value),
+                costoTotal: parseInt(document.getElementById('fiado-costo-total').value),
+                tipo: 'Fiado',
+                pagos: oldPagos
+            };
         }
     } else {
         const nuevoFiado = {
@@ -533,8 +541,14 @@ document.getElementById('form-venta').addEventListener('submit', (e) => {
     if (currentEditId && currentEditOrigen === 'ventas') {
         const index = appData.ventas.findIndex(v => v.id === currentEditId);
         if (index > -1) {
-            appData.ventas[index].fecha = document.getElementById('venta-fecha').value;
-            appData.ventas[index].cantidad = parseInt(document.getElementById('venta-cantidad').value);
+            const oldPagos = appData.ventas[index].pagos || [];
+            appData.ventas[index] = {
+                id: currentEditId,
+                fecha: document.getElementById('venta-fecha').value,
+                cantidad: parseInt(document.getElementById('venta-cantidad').value),
+                tipo: 'Directa',
+                pagos: oldPagos
+            };
         }
     } else {
         const nuevaVenta = {
@@ -686,17 +700,28 @@ document.getElementById('form-pedido').addEventListener('submit', (e) => {
     if (currentEditId && currentEditOrigen === 'pedidos') {
         const index = appData.pedidos.findIndex(p => p.id === currentEditId);
         if (index > -1) {
-            appData.pedidos[index].nombre = document.getElementById('pedido-nombre').value;
-            appData.pedidos[index].fechaEncargo = document.getElementById('pedido-fecha').value;
-            appData.pedidos[index].fechaEntrega = document.getElementById('pedido-entrega').value;
-            appData.pedidos[index].lugar = document.getElementById('pedido-lugar').value;
-            appData.pedidos[index].sabores = sabores;
-            appData.pedidos[index].cantidadTotal = parseInt(document.getElementById('pedido-total-helados').value);
-            appData.pedidos[index].valorHelados = parseInt(document.getElementById('pedido-valor-helados').value);
-            appData.pedidos[index].valorTransporte = parseInt(document.getElementById('pedido-transporte').value);
-            appData.pedidos[index].costoTotal = parseInt(document.getElementById('pedido-valor-helados').value) + parseInt(document.getElementById('pedido-transporte').value);
-            appData.pedidos[index].tipoVenta = document.getElementById('pedido-tipo-venta').value;
-            appData.pedidos[index].precioUnidad = parseInt(document.getElementById('pedido-precio-unidad').value);
+            const oldPagos = appData.pedidos[index].pagos || [];
+            const oldEntregado = appData.pedidos[index].entregado || false;
+            const oldSaboresHechos = appData.pedidos[index].saboresHechos;
+            appData.pedidos[index] = {
+                id: currentEditId,
+                nombre: document.getElementById('pedido-nombre').value,
+                fechaEncargo: document.getElementById('pedido-fecha').value,
+                fechaEntrega: document.getElementById('pedido-entrega').value,
+                lugar: document.getElementById('pedido-lugar').value,
+                sabores: sabores,
+                cantidadTotal: parseInt(document.getElementById('pedido-total-helados').value),
+                valorHelados: parseInt(document.getElementById('pedido-valor-helados').value),
+                valorTransporte: parseInt(document.getElementById('pedido-transporte').value),
+                costoTotal: parseInt(document.getElementById('pedido-valor-helados').value) + parseInt(document.getElementById('pedido-transporte').value),
+                tipoVenta: document.getElementById('pedido-tipo-venta').value,
+                precioUnidad: parseInt(document.getElementById('pedido-precio-unidad').value),
+                entregado: oldEntregado,
+                pagos: oldPagos
+            };
+            if (oldSaboresHechos) {
+                appData.pedidos[index].saboresHechos = oldSaboresHechos;
+            }
         }
     } else {
         const nuevoPedido = {
@@ -984,10 +1009,13 @@ document.getElementById('form-compra').addEventListener('submit', (e) => {
     if (currentEditId && currentEditOrigen === 'compras') {
         const index = appData.compras.findIndex(c => c.id === currentEditId);
         if (index > -1) {
-            appData.compras[index].producto = document.getElementById('compra-producto').value;
-            appData.compras[index].fecha = document.getElementById('compra-fecha').value;
-            appData.compras[index].lugar = document.getElementById('compra-lugar').value;
-            appData.compras[index].costo = parseInt(document.getElementById('compra-costo').value);
+            appData.compras[index] = {
+                id: currentEditId,
+                producto: document.getElementById('compra-producto').value,
+                fecha: document.getElementById('compra-fecha').value,
+                lugar: document.getElementById('compra-lugar').value,
+                costo: parseInt(document.getElementById('compra-costo').value)
+            };
         }
     } else {
         const nuevaCompra = {
