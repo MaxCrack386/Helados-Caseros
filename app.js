@@ -16,6 +16,11 @@ const db = firebase.firestore();
 const analytics = firebase.analytics();
 const SUPERADMIN_EMAIL = "yeisonvalencia386@gmail.com";
 
+auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
+  .catch((error) => {
+    console.error("Error setting persistence:", error);
+  });
+
 // --- ESTADO ---
 const PRECIO_HELADO = 2000;
 
@@ -54,15 +59,17 @@ auth.onAuthStateChanged(async (user) => {
     const loginContainer = document.getElementById('login-container');
     const appContainer = document.getElementById('app-container');
     const loginMessage = document.getElementById('login-message');
+    const stepGoogle = document.getElementById('step-google-login');
+    const stepCreds = document.getElementById('step-credentials-login');
 
     if (user) {
         if (user.email === SUPERADMIN_EMAIL) {
-            // Es superadmin, permitir acceso
-            loginContainer.style.display = 'none';
-            appContainer.style.display = 'flex';
-            await loadData();
+            // Es superadmin, mostrar paso 2 (usuario/contraseña)
+            if (stepGoogle) stepGoogle.style.display = 'none';
+            if (stepCreds) stepCreds.style.display = 'block';
+            loginMessage.style.display = 'none';
         } else {
-            // No es superadmin, registrar solicitud y denegar acceso localmente
+            // No es superadmin, denegar acceso localmente
             try {
                 await db.collection('access_requests').doc(user.uid).set({
                     email: user.email,
@@ -71,22 +78,48 @@ auth.onAuthStateChanged(async (user) => {
                     status: 'pending',
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                loginMessage.innerText = "No tienes acceso. Se ha enviado una solicitud al administrador.";
-                loginMessage.style.display = 'block';
             } catch (error) {
                 console.error("Error registrando solicitud:", error);
-                loginMessage.innerText = "Error verificando acceso.";
-                loginMessage.style.display = 'block';
             }
+            loginMessage.innerText = "Cuenta no registrada";
+            loginMessage.style.display = 'block';
             auth.signOut();
         }
     } else {
         // No hay usuario, mostrar login
         loginContainer.style.display = 'flex';
         appContainer.style.display = 'none';
+        if (stepGoogle) stepGoogle.style.display = 'block';
+        if (stepCreds) stepCreds.style.display = 'none';
         loginMessage.style.display = 'none';
+        const userInp = document.getElementById('login-username');
+        const passInp = document.getElementById('login-password');
+        if (userInp) userInp.value = '';
+        if (passInp) passInp.value = '';
     }
 });
+
+function verifyCredentials() {
+    const userVal = document.getElementById('login-username').value;
+    const passVal = document.getElementById('login-password').value;
+    const loginMessage = document.getElementById('login-message');
+
+    if (userVal !== 'HeladoscaserosYVM386') {
+        loginMessage.innerText = 'Usuario incorrecto';
+        loginMessage.style.display = 'block';
+        return;
+    }
+    if (passVal !== 'yvm24/02Hc*') {
+        loginMessage.innerText = 'Contraseña incorrecta';
+        loginMessage.style.display = 'block';
+        return;
+    }
+    
+    // Credenciales correctas
+    document.getElementById('login-container').style.display = 'none';
+    document.getElementById('app-container').style.display = 'flex';
+    loadData();
+}
 
 // Inicialización de datos
 async function loadData() {
