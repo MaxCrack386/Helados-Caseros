@@ -434,6 +434,11 @@ function calculateFiadoTotals() {
 
 document.getElementById('form-fiado').addEventListener('submit', (e) => {
     e.preventDefault();
+    const currentEditId = editingItemId;
+    const currentEditOrigen = editingItemOrigen;
+    editingItemId = null;
+    editingItemOrigen = null;
+
     const sabores = {
         maracuya: parseInt(document.getElementById('fiado-sab-maracuya').value || 0),
         mora: parseInt(document.getElementById('fiado-sab-mora').value || 0),
@@ -442,17 +447,28 @@ document.getElementById('form-fiado').addEventListener('submit', (e) => {
         queso: parseInt(document.getElementById('fiado-sab-queso').value || 0)
     };
     
-    const nuevoFiado = {
-        id: generateId(),
-        fecha: document.getElementById('fiado-fecha').value,
-        nombre: document.getElementById('fiado-nombre').value,
-        sabores: sabores,
-        cantidad: parseInt(document.getElementById('fiado-total-helados').value),
-        costoTotal: parseInt(document.getElementById('fiado-costo-total').value),
-        tipo: 'Fiado',
-        pagos: []
-    };
-    appData.ventas.push(nuevoFiado);
+    if (currentEditId && currentEditOrigen === 'ventas') {
+        const index = appData.ventas.findIndex(v => v.id === currentEditId);
+        if (index > -1) {
+            appData.ventas[index].fecha = document.getElementById('fiado-fecha').value;
+            appData.ventas[index].nombre = document.getElementById('fiado-nombre').value;
+            appData.ventas[index].sabores = sabores;
+            appData.ventas[index].cantidad = parseInt(document.getElementById('fiado-total-helados').value);
+            appData.ventas[index].costoTotal = parseInt(document.getElementById('fiado-costo-total').value);
+        }
+    } else {
+        const nuevoFiado = {
+            id: generateId(),
+            fecha: document.getElementById('fiado-fecha').value,
+            nombre: document.getElementById('fiado-nombre').value,
+            sabores: sabores,
+            cantidad: parseInt(document.getElementById('fiado-total-helados').value),
+            costoTotal: parseInt(document.getElementById('fiado-costo-total').value),
+            tipo: 'Fiado',
+            pagos: []
+        };
+        appData.ventas.push(nuevoFiado);
+    }
     saveData();
     closeModal('modal-venta');
     if (currentModalContext && (currentModalContext.type === 'ventas' || currentModalContext.type === 'resumen')) {
@@ -1641,8 +1657,21 @@ function editItemDirectly(id, origen) {
     if (origen === 'ventas') {
         const item = appData.ventas.find(v => v.id === id);
         if (item) {
-            document.getElementById('venta-fecha').value = item.fecha;
-            document.getElementById('venta-cantidad').value = item.cantidad;
+            if (item.tipo === 'Fiado') {
+                document.getElementById('fiado-nombre').value = item.nombre;
+                document.getElementById('fiado-fecha').value = item.fecha;
+                document.getElementById('fiado-sab-maracuya').value = item.sabores?.maracuya || 0;
+                document.getElementById('fiado-sab-mora').value = item.sabores?.mora || 0;
+                document.getElementById('fiado-sab-pina').value = item.sabores?.pina || 0;
+                document.getElementById('fiado-sab-coco').value = item.sabores?.coco || 0;
+                document.getElementById('fiado-sab-queso').value = item.sabores?.queso || 0;
+                calculateFiadoTotals();
+                selectTipoVenta('Fiado');
+            } else {
+                document.getElementById('venta-fecha').value = item.fecha;
+                document.getElementById('venta-cantidad').value = item.cantidad;
+                selectTipoVenta('Contado');
+            }
             editingItemId = id;
             editingItemOrigen = origen;
             const h2 = document.querySelector('#modal-venta h2');
