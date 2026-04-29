@@ -121,6 +121,20 @@ function verifyCredentials() {
     loadData();
 }
 
+function togglePasswordVisibility() {
+    const passInput = document.getElementById('login-password');
+    const eyeIcon = document.getElementById('password-eye-icon');
+    if (passInput.type === 'password') {
+        passInput.type = 'text';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+    } else {
+        passInput.type = 'password';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+    }
+}
+
 // Inicialización de datos
 async function loadData() {
     try {
