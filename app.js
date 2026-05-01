@@ -1911,7 +1911,7 @@ function renderRegistrosProducto() {
 }
 
 // Lógica Formulario Producto
-document.getElementById('form-producto').addEventListener('submit', (e) => {
+function handleProductoSubmit(e) {
     e.preventDefault();
     const id = document.getElementById('producto-id').value;
     const nombre = document.getElementById('producto-nombre').value;
@@ -1931,7 +1931,7 @@ document.getElementById('form-producto').addEventListener('submit', (e) => {
     saveData();
     renderProductos();
     closeModal('modal-producto');
-});
+}
 
 function editarProducto(id) {
     const p = appData.productos.find(x => x.id === id);
@@ -1958,7 +1958,7 @@ function abrirModalRegistroProducto() {
     openModal('modal-producto-registro');
 }
 
-document.getElementById('form-producto-registro').addEventListener('submit', (e) => {
+function handleProductoRegistroSubmit(e) {
     e.preventDefault();
     if(!activeProductoId) return;
     const id = document.getElementById('producto-registro-id').value;
@@ -1991,7 +1991,7 @@ document.getElementById('form-producto-registro').addEventListener('submit', (e)
     saveData();
     renderRegistrosProducto();
     closeModal('modal-producto-registro');
-});
+}
 
 function editarRegistroProducto(id) {
     const prod = appData.productos.find(p => p.id === activeProductoId);

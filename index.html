@@ -658,10 +658,10 @@
         <div class="modal">
             <div class="modal-header">
                 <h2 id="modal-producto-title" data-i18n="modal_producto_title">Nuevo Producto</h2>
-                <button class="close-btn" onclick="closeModal('modal-producto')"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="close-btn" onclick="closeModal('modal-producto')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
-                <form id="form-producto">
+                <form id="form-producto" onsubmit="handleProductoSubmit(event)">
                     <input type="hidden" id="producto-id">
                     <div class="form-group">
                         <label for="producto-nombre" data-i18n="label_nombre_producto">Nombre del Producto *</label>
@@ -681,11 +681,11 @@
         <div class="modal modal-lg">
             <div class="modal-header">
                 <h2 id="modal-producto-detalles-title">Detalles del Producto</h2>
-                <button class="close-btn" onclick="closeModal('modal-producto-detalles')"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="close-btn" onclick="closeModal('modal-producto-detalles')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
                 <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
-                    <button class="btn-primary" style="background-color: #8B4513;" onclick="abrirModalRegistroProducto()">
+                    <button type="button" class="btn-primary" style="background-color: #8B4513;" onclick="abrirModalRegistroProducto()">
                         <i class="fa-solid fa-plus"></i> <span data-i18n="btn_nuevo_registro_precio">Nuevo Precio</span>
                     </button>
                 </div>
@@ -701,10 +701,10 @@
         <div class="modal">
             <div class="modal-header">
                 <h2 id="modal-producto-registro-title">Nuevo Precio</h2>
-                <button class="close-btn" onclick="closeModal('modal-producto-registro')"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="close-btn" onclick="closeModal('modal-producto-registro')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
-                <form id="form-producto-registro">
+                <form id="form-producto-registro" onsubmit="handleProductoRegistroSubmit(event)">
                     <input type="hidden" id="producto-registro-id">
                     <div class="form-group">
                         <label for="producto-registro-tienda">Dónde se compró *</label>
