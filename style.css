@@ -145,15 +145,14 @@ body {
 .nav-btn.active[data-tab="papelera"] {
     background-color: #000000;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.nav-btn[data-tab="productos"] { color: #8B4513; }
-.nav-btn:hover[data-tab="productos"] { color: #A0522D; }
+.nav-btn[data-tab="productos"] i { color: #8B4513; }
+.nav-btn:hover[data-tab="productos"] i { color: #A0522D; }
 .nav-btn.active[data-tab="productos"] {
     background-color: #8B4513;
     color: white;
     box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
 }
+.nav-btn.active[data-tab="productos"] i { color: white; }
 
 /* Main Content */
 .main-content {

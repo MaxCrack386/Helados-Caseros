@@ -1616,6 +1616,14 @@ function renderPapelera() {
             title = `${t('pedido_prefix')}: ${item.nombre}`;
             subtitle = `${item.fechaEncargo} | ${item.cantidadTotal} ${t('ice_creams')}`;
             typeText = `<span class="countdown">Pedido</span>`;
+        } else if(item.originalList === 'productos') {
+            title = `Producto: ${item.nombre}`;
+            subtitle = `${item.registros ? item.registros.length : 0} registros de precio`;
+            typeText = `<span class="countdown done">Producto</span>`;
+        } else if(item.originalList === 'producto_registros') {
+            title = `Precio en ${item.tienda}`;
+            subtitle = `${item.cantidad} ${item.medida} - ${formatCurrency(item.precio)}`;
+            typeText = `<span class="countdown urgent">Precio</span>`;
         }
         
         list.innerHTML += `
@@ -1676,6 +1684,23 @@ function verItemPapelera(id) {
                     <p>Costo: ${formatCurrency(item.costo)}</p>
                 </div>
             </div>`;
+    } else if(item.originalList === 'productos') {
+        html = `
+            <div class="detalle-item compra-item">
+                <div class="detalle-item-info">
+                    <h4>Producto: ${item.nombre}</h4>
+                    <p>Registros de precios asociados: ${item.registros ? item.registros.length : 0}</p>
+                </div>
+            </div>`;
+    } else if(item.originalList === 'producto_registros') {
+        html = `
+            <div class="detalle-item venta-item">
+                <div class="detalle-item-info">
+                    <h4>Precio en ${item.tienda}</h4>
+                    <p>Cantidad: ${item.cantidad} ${item.medida}</p>
+                    <p>Precio: ${formatCurrency(item.precio)}</p>
+                </div>
+            </div>`;
     }
     
     contenedor.innerHTML = html;
@@ -1693,7 +1718,24 @@ function restaurarDePapelera(id) {
         const item = appData.papelera.splice(itemIndex, 1)[0];
         const listName = item.originalList;
         delete item.originalList;
-        appData[listName].push(item);
+        
+        if (listName === 'producto_registros') {
+            const parentId = item.parentProductoId;
+            delete item.parentProductoId;
+            const prod = appData.productos.find(p => p.id === parentId);
+            if (prod) {
+                if (!prod.registros) prod.registros = [];
+                prod.registros.push(item);
+            } else {
+                alert("No se puede restaurar el registro porque el producto principal ya no existe o está en la papelera.");
+                item.originalList = listName;
+                item.parentProductoId = parentId;
+                appData.papelera.splice(itemIndex, 0, item);
+                return;
+            }
+        } else {
+            appData[listName].push(item);
+        }
         saveData();
     }
 }
@@ -1943,11 +1985,18 @@ function editarProducto(id) {
 }
 
 function eliminarProducto(id) {
-    if(confirm('¿Estás seguro de eliminar este producto y todos sus registros de precio?')) {
-        appData.productos = appData.productos.filter(x => x.id !== id);
-        saveData();
-        renderProductos();
-    }
+    pendingDeleteAction = () => {
+        const index = appData.productos.findIndex(x => x.id === id);
+        if (index > -1) {
+            const item = appData.productos.splice(index, 1)[0];
+            item.originalList = 'productos';
+            appData.papelera.push(item);
+            saveData();
+            renderProductos();
+        }
+    };
+    document.getElementById('confirm-text').innerText = t('confirm_enviar_papelera') || '¿Estás seguro de enviar a la papelera?';
+    openModal('modal-confirmacion');
 }
 
 // Lógica Formulario Registro Producto
@@ -2009,11 +2058,19 @@ function editarRegistroProducto(id) {
 }
 
 function eliminarRegistroProducto(id) {
-    if(confirm('¿Estás seguro de eliminar este registro de precio?')) {
+    pendingDeleteAction = () => {
         const prod = appData.productos.find(p => p.id === activeProductoId);
         if(!prod) return;
-        prod.registros = prod.registros.filter(x => x.id !== id);
-        saveData();
-        renderRegistrosProducto();
-    }
+        const index = prod.registros.findIndex(x => x.id === id);
+        if (index > -1) {
+            const item = prod.registros.splice(index, 1)[0];
+            item.originalList = 'producto_registros';
+            item.parentProductoId = activeProductoId;
+            appData.papelera.push(item);
+            saveData();
+            renderRegistrosProducto();
+        }
+    };
+    document.getElementById('confirm-text').innerText = t('confirm_enviar_papelera') || '¿Estás seguro de enviar a la papelera?';
+    openModal('modal-confirmacion');
 }
