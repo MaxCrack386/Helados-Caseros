@@ -1961,7 +1961,7 @@ function renderRegistrosProducto() {
 function abrirModalProducto() {
     document.getElementById('form-producto').reset();
     document.getElementById('producto-id').value = '';
-    document.getElementById('modal-producto-title').innerText = t('modal_producto_title') || 'Nuevo Producto';
+    document.getElementById('modal-producto-title').innerText = 'Registrar nuevo producto';
     openModal('modal-producto');
 }
 
