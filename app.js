@@ -1893,10 +1893,10 @@ function renderProductos() {
                     <div class="subtitle"><small>${prod.registros ? prod.registros.length : 0} registros de precios</small></div>
                 </div>
                 <div style="display:flex; gap:0.5rem;" onclick="event.stopPropagation()">
-                    <button class="btn-primary" style="background-color: var(--warning); padding:0.4rem 0.6rem; border-radius:var(--border-radius); border:none; color:white; cursor:pointer;" onclick="editarProducto('${prod.id}')">
+                    <button class="btn-primary" style="background-color: var(--warning); padding:0.4rem 0.6rem; border-radius:var(--radius-md); border:none; color:white; cursor:pointer;" onclick="editarProducto('${prod.id}')">
                         <i class="fa-solid fa-pen"></i>
                     </button>
-                    <button class="btn-primary" style="background-color: var(--danger); padding:0.4rem 0.6rem; border-radius:var(--border-radius); border:none; color:white; cursor:pointer;" onclick="eliminarProducto('${prod.id}')">
+                    <button class="btn-primary" style="background-color: #ef4444; padding:0.4rem 0.6rem; border-radius:var(--radius-md); border:none; color:white; cursor:pointer;" onclick="eliminarProducto('${prod.id}')">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
@@ -1948,7 +1948,7 @@ function renderRegistrosProducto() {
                 <strong style="color:var(--primary); display:block; margin-bottom:0.3rem;">${formatCurrency(reg.precio)}</strong>
                 <div style="display:flex; gap:0.5rem; justify-content:flex-end;">
                     <button style="background:none; border:none; color:var(--warning); cursor:pointer;" onclick="editarRegistroProducto('${reg.id}')"><i class="fa-solid fa-pen"></i></button>
-                    <button style="background:none; border:none; color:var(--danger); cursor:pointer;" onclick="eliminarRegistroProducto('${reg.id}')"><i class="fa-solid fa-trash"></i></button>
+                    <button style="background:none; border:none; color:#ef4444; cursor:pointer;" onclick="eliminarRegistroProducto('${reg.id}')"><i class="fa-solid fa-trash"></i></button>
                 </div>
             </div>
         `;
