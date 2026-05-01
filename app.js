@@ -1958,6 +1958,13 @@ function renderRegistrosProducto() {
 }
 
 // Lógica Formulario Producto
+function abrirModalProducto() {
+    document.getElementById('form-producto').reset();
+    document.getElementById('producto-id').value = '';
+    document.getElementById('modal-producto-title').innerText = t('modal_producto_title') || 'Nuevo Producto';
+    openModal('modal-producto');
+}
+
 function handleProductoSubmit(e) {
     e.preventDefault();
     const id = document.getElementById('producto-id').value;
