@@ -274,6 +274,10 @@ body {
     gap: 1.5rem;
 }
 
+.dashboard-split {
+    grid-template-columns: 1fr 1fr;
+}
+
 .months-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -758,8 +762,19 @@ body {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .dashboard-grid { grid-template-columns: 1fr; }
+    .dashboard-grid, .dashboard-split { grid-template-columns: 1fr; }
     .form-row { flex-direction: column; }
+    
+    .order-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .order-meta {
+        width: 100%;
+        justify-content: space-between;
+    }
     
     .mobile-header {
         display: flex;
