@@ -902,9 +902,9 @@ body {
 }
 
 .login-box {
-    background: var(--bg-card);
+    background: var(--bg-sidebar);
     padding: 3rem;
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-xl);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     text-align: center;
     display: flex;
