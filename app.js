@@ -13,7 +13,12 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-const analytics = firebase.analytics();
+let analytics = null;
+try {
+    analytics = firebase.analytics();
+} catch (e) {
+    console.warn("Analytics blocked or not loaded.");
+}
 const SUPERADMIN_EMAIL = "yeisonvalencia386@gmail.com";
 
 auth.setPersistence(firebase.auth.Auth.Persistence.SESSION)
