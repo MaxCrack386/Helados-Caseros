@@ -28,7 +28,8 @@ let appData = {
     ventas: [],
     compras: [],
     pedidos: [],
-    papelera: []
+    papelera: [],
+    productos: []
 };
 
 let deleteMode = false;
@@ -145,6 +146,7 @@ async function loadData() {
             if(!appData.ventas) appData.ventas = [];
             if(!appData.compras) appData.compras = [];
             if(!appData.pedidos) appData.pedidos = [];
+            if(!appData.productos) appData.productos = [];
             
             if(appData.pedidos) {
                 appData.pedidos.forEach(p => {
@@ -157,6 +159,7 @@ async function loadData() {
             if (saved) {
                 appData = JSON.parse(saved);
                 if(!appData.papelera) appData.papelera = [];
+                if(!appData.productos) appData.productos = [];
                 if(appData.pedidos) {
                     appData.pedidos.forEach(p => {
                         if(!p.pagos) p.pagos = [];
@@ -238,6 +241,7 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
         if(tabId === 'principal') renderMainChart();
         if(tabId === 'resumen') renderSummaryChart();
         if(tabId === 'papelera') renderPapelera();
+        if(tabId === 'productos') renderProductos();
         
         // Desactivar modo eliminar al cambiar de pestaña
         if(deleteMode) cancelDeleteMode(deleteContext);
@@ -1817,4 +1821,199 @@ function deleteItemDirectly(id, origen) {
     };
     document.getElementById('confirm-text').innerText = t('confirm_enviar_papelera');
     openModal('modal-confirmacion');
+}
+
+// ========================
+// PRODUCTOS
+// ========================
+let activeProductoId = null;
+
+function renderProductos() {
+    const grid = document.getElementById('productos-grid');
+    if(!grid) return;
+    grid.innerHTML = '';
+
+    if (!appData.productos || appData.productos.length === 0) {
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">No tienes productos guardados. ¡Crea uno nuevo!</p>';
+        return;
+    }
+
+    appData.productos.forEach(prod => {
+        grid.innerHTML += `
+            <div class="card month-card" style="display:flex; justify-content:space-between; align-items:center;" onclick="abrirCajonProducto('${prod.id}')">
+                <div>
+                    <h2 style="margin:0;">${prod.nombre}</h2>
+                    <div class="subtitle"><small>${prod.registros ? prod.registros.length : 0} registros de precios</small></div>
+                </div>
+                <div style="display:flex; gap:0.5rem;" onclick="event.stopPropagation()">
+                    <button class="btn-primary" style="background-color: var(--warning); padding:0.4rem 0.6rem; border-radius:var(--border-radius); border:none; color:white; cursor:pointer;" onclick="editarProducto('${prod.id}')">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button class="btn-primary" style="background-color: var(--danger); padding:0.4rem 0.6rem; border-radius:var(--border-radius); border:none; color:white; cursor:pointer;" onclick="eliminarProducto('${prod.id}')">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function abrirCajonProducto(id) {
+    activeProductoId = id;
+    const prod = appData.productos.find(p => p.id === id);
+    if(!prod) return;
+    document.getElementById('modal-producto-detalles-title').innerText = 'Detalles: ' + prod.nombre;
+    renderRegistrosProducto();
+    openModal('modal-producto-detalles');
+}
+
+function renderRegistrosProducto() {
+    const container = document.getElementById('producto-registros-list');
+    container.innerHTML = '';
+    const prod = appData.productos.find(p => p.id === activeProductoId);
+    if(!prod || !prod.registros || prod.registros.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No hay precios registrados.</p>';
+        return;
+    }
+
+    let ul = document.createElement('ul');
+    ul.className = 'simple-list';
+    
+    prod.registros.forEach(reg => {
+        let li = document.createElement('li');
+        li.style.display = 'flex';
+        li.style.justifyContent = 'space-between';
+        li.style.alignItems = 'center';
+        li.style.background = 'var(--bg-main)';
+        li.style.padding = '1rem';
+        li.style.borderRadius = 'var(--radius-md)';
+        li.style.border = '1px solid var(--border-color)';
+        li.style.marginBottom = '0.5rem';
+
+        li.innerHTML = `
+            <div>
+                <strong style="color:var(--text-main);">${reg.tienda}</strong>
+                <div style="color:var(--text-muted); font-size:0.9rem;">
+                    ${reg.cantidad} ${reg.medida}
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <strong style="color:var(--primary); display:block; margin-bottom:0.3rem;">${formatCurrency(reg.precio)}</strong>
+                <div style="display:flex; gap:0.5rem; justify-content:flex-end;">
+                    <button style="background:none; border:none; color:var(--warning); cursor:pointer;" onclick="editarRegistroProducto('${reg.id}')"><i class="fa-solid fa-pen"></i></button>
+                    <button style="background:none; border:none; color:var(--danger); cursor:pointer;" onclick="eliminarRegistroProducto('${reg.id}')"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            </div>
+        `;
+        ul.appendChild(li);
+    });
+    container.appendChild(ul);
+}
+
+// Lógica Formulario Producto
+document.getElementById('form-producto').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = document.getElementById('producto-id').value;
+    const nombre = document.getElementById('producto-nombre').value;
+
+    if(!appData.productos) appData.productos = [];
+
+    if(id) {
+        const p = appData.productos.find(x => x.id === id);
+        if(p) p.nombre = nombre;
+    } else {
+        appData.productos.push({
+            id: generateId(),
+            nombre: nombre,
+            registros: []
+        });
+    }
+    saveData();
+    renderProductos();
+    closeModal('modal-producto');
+});
+
+function editarProducto(id) {
+    const p = appData.productos.find(x => x.id === id);
+    if(!p) return;
+    document.getElementById('producto-id').value = p.id;
+    document.getElementById('producto-nombre').value = p.nombre;
+    document.getElementById('modal-producto-title').innerText = 'Editar Producto';
+    openModal('modal-producto');
+}
+
+function eliminarProducto(id) {
+    if(confirm('¿Estás seguro de eliminar este producto y todos sus registros de precio?')) {
+        appData.productos = appData.productos.filter(x => x.id !== id);
+        saveData();
+        renderProductos();
+    }
+}
+
+// Lógica Formulario Registro Producto
+function abrirModalRegistroProducto() {
+    document.getElementById('form-producto-registro').reset();
+    document.getElementById('producto-registro-id').value = '';
+    document.getElementById('modal-producto-registro-title').innerText = 'Nuevo Precio';
+    openModal('modal-producto-registro');
+}
+
+document.getElementById('form-producto-registro').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if(!activeProductoId) return;
+    const id = document.getElementById('producto-registro-id').value;
+    const tienda = document.getElementById('producto-registro-tienda').value;
+    const cantidad = parseFloat(document.getElementById('producto-registro-cantidad').value);
+    const medida = document.getElementById('producto-registro-medida').value;
+    const precio = parseFloat(document.getElementById('producto-registro-precio').value);
+
+    const prod = appData.productos.find(p => p.id === activeProductoId);
+    if(!prod) return;
+    if(!prod.registros) prod.registros = [];
+
+    if(id) {
+        const r = prod.registros.find(x => x.id === id);
+        if(r) {
+            r.tienda = tienda;
+            r.cantidad = cantidad;
+            r.medida = medida;
+            r.precio = precio;
+        }
+    } else {
+        prod.registros.push({
+            id: generateId(),
+            tienda,
+            cantidad,
+            medida,
+            precio
+        });
+    }
+    saveData();
+    renderRegistrosProducto();
+    closeModal('modal-producto-registro');
+});
+
+function editarRegistroProducto(id) {
+    const prod = appData.productos.find(p => p.id === activeProductoId);
+    if(!prod) return;
+    const r = prod.registros.find(x => x.id === id);
+    if(!r) return;
+    
+    document.getElementById('producto-registro-id').value = r.id;
+    document.getElementById('producto-registro-tienda').value = r.tienda;
+    document.getElementById('producto-registro-cantidad').value = r.cantidad;
+    document.getElementById('producto-registro-medida').value = r.medida;
+    document.getElementById('producto-registro-precio').value = r.precio;
+    document.getElementById('modal-producto-registro-title').innerText = 'Editar Precio';
+    openModal('modal-producto-registro');
+}
+
+function eliminarRegistroProducto(id) {
+    if(confirm('¿Estás seguro de eliminar este registro de precio?')) {
+        const prod = appData.productos.find(p => p.id === activeProductoId);
+        if(!prod) return;
+        prod.registros = prod.registros.filter(x => x.id !== id);
+        saveData();
+        renderRegistrosProducto();
+    }
 }
