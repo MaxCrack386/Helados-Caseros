@@ -57,6 +57,7 @@
             <div class="sidebar-header">
                 <img src="Logo.png" alt="Helados Caseros Logo" class="logo-img">
                 <h2 data-i18n="app_title">Helados Caseros</h2>
+                <div class="sidebar-date-box" id="sidebar-date-box" style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem; text-align: center; font-weight: 500;"></div>
             </div>
             <nav class="sidebar-nav">
                 <button class="nav-btn active" data-tab="principal">
@@ -716,13 +717,41 @@
                             <input type="number" step="0.01" min="0.01" id="producto-registro-cantidad" required>
                         </div>
                         <div class="form-group half">
-                            <label for="producto-registro-medida">Medida * (Litro, Kg...)</label>
-                            <input type="text" id="producto-registro-medida" required>
+                            <label for="producto-registro-medida">Medida *</label>
+                            <select id="producto-registro-medida" required onchange="handleMedidaChange()">
+                                <option value="" disabled selected>Seleccione...</option>
+                                <option value="unidad">Unidad</option>
+                                <option value="libra">Libra</option>
+                                <option value="botella">Botella</option>
+                                <option value="paquete">Paquete</option>
+                            </select>
                         </div>
+                    </div>
+                    <div class="form-row" id="extra-botella" style="display: none;">
+                        <div class="form-group half">
+                            <label for="producto-botella-capacidad">Capacidad *</label>
+                            <input type="number" step="0.01" min="0.01" id="producto-botella-capacidad">
+                        </div>
+                        <div class="form-group half">
+                            <label for="producto-botella-unidad">Unidad *</label>
+                            <select id="producto-botella-unidad">
+                                <option value="gramos">Gramos (g)</option>
+                                <option value="mililitros">Mililitros (ml)</option>
+                                <option value="litros">Litros (L)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" id="extra-paquete" style="display: none;">
+                        <label for="producto-paquete-unidades">Unidades por paquete *</label>
+                        <input type="number" step="1" min="1" id="producto-paquete-unidades">
                     </div>
                     <div class="form-group">
                         <label for="producto-registro-precio">Precio * ($)</label>
                         <input type="number" id="producto-registro-precio" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="producto-registro-descripcion">Descripción / Dato extra (Opcional)</label>
+                        <textarea id="producto-registro-descripcion" rows="2" style="width: 100%; border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 0.75rem; font-family: inherit; resize: vertical;"></textarea>
                     </div>
                     <div class="form-actions">
                         <button type="button" class="btn-secondary" onclick="closeModal('modal-producto-registro')" data-i18n="btn_cancelar">Cancelar</button>

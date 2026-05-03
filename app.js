@@ -322,8 +322,20 @@ function closeModal(id) {
     }
 }
 
+function updateSidebarDate() {
+    const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const now = new Date();
+    const dateStr = `${days[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]} de ${now.getFullYear()}`;
+    const dateBox = document.getElementById('sidebar-date-box');
+    if (dateBox) {
+        dateBox.innerText = dateStr;
+    }
+}
+
 // --- ACTUALIZACIÓN DE VISTAS ---
 function updateAllViews() {
+    updateSidebarDate();
     renderPrincipal();
     renderVentas();
     renderPedidos();
@@ -1937,12 +1949,21 @@ function renderRegistrosProducto() {
         li.style.border = '1px solid var(--border-color)';
         li.style.marginBottom = '0.5rem';
 
+        let medidaStr = `${reg.cantidad} ${reg.medida}`;
+        if (reg.medida === 'botella' && reg.extraData) {
+            medidaStr += ` (${reg.extraData.capacidad} ${reg.extraData.unidadBotella})`;
+        } else if (reg.medida === 'paquete' && reg.extraData) {
+            medidaStr += ` (${reg.extraData.unidades} uds)`;
+        }
+        let descStr = reg.descripcion ? `<div style="font-size:0.85rem; color:var(--text-muted); margin-top:0.3rem;"><i>${reg.descripcion}</i></div>` : '';
+
         li.innerHTML = `
             <div>
                 <strong style="color:var(--text-main);">${reg.tienda}</strong>
                 <div style="color:var(--text-muted); font-size:0.9rem;">
-                    ${reg.cantidad} ${reg.medida}
+                    ${medidaStr}
                 </div>
+                ${descStr}
             </div>
             <div style="text-align:right;">
                 <strong style="color:var(--primary); display:block; margin-bottom:0.3rem;">${formatCurrency(reg.precio)}</strong>
@@ -2012,10 +2033,26 @@ function eliminarProducto(id) {
 }
 
 // Lógica Formulario Registro Producto
+function handleMedidaChange() {
+    const medida = document.getElementById('producto-registro-medida').value;
+    const extraBotella = document.getElementById('extra-botella');
+    const extraPaquete = document.getElementById('extra-paquete');
+    
+    if(extraBotella) extraBotella.style.display = 'none';
+    if(extraPaquete) extraPaquete.style.display = 'none';
+    
+    if (medida === 'botella') {
+        if(extraBotella) extraBotella.style.display = 'flex';
+    } else if (medida === 'paquete') {
+        if(extraPaquete) extraPaquete.style.display = 'block';
+    }
+}
+
 function abrirModalRegistroProducto() {
     document.getElementById('form-producto-registro').reset();
     document.getElementById('producto-registro-id').value = '';
     document.getElementById('modal-producto-registro-title').innerText = 'Nuevo Precio';
+    handleMedidaChange();
     openModal('modal-producto-registro');
 }
 
@@ -2027,6 +2064,15 @@ function handleProductoRegistroSubmit(e) {
     const cantidad = parseFloat(document.getElementById('producto-registro-cantidad').value);
     const medida = document.getElementById('producto-registro-medida').value;
     const precio = parseFloat(document.getElementById('producto-registro-precio').value);
+    const descripcion = document.getElementById('producto-registro-descripcion').value;
+
+    let extraData = {};
+    if (medida === 'botella') {
+        extraData.capacidad = parseFloat(document.getElementById('producto-botella-capacidad').value);
+        extraData.unidadBotella = document.getElementById('producto-botella-unidad').value;
+    } else if (medida === 'paquete') {
+        extraData.unidades = parseInt(document.getElementById('producto-paquete-unidades').value);
+    }
 
     const prod = appData.productos.find(p => p.id === activeProductoId);
     if(!prod) return;
@@ -2039,6 +2085,8 @@ function handleProductoRegistroSubmit(e) {
             r.cantidad = cantidad;
             r.medida = medida;
             r.precio = precio;
+            r.descripcion = descripcion;
+            r.extraData = extraData;
         }
     } else {
         prod.registros.push({
@@ -2046,7 +2094,9 @@ function handleProductoRegistroSubmit(e) {
             tienda,
             cantidad,
             medida,
-            precio
+            precio,
+            descripcion,
+            extraData
         });
     }
     saveData();
@@ -2065,6 +2115,18 @@ function editarRegistroProducto(id) {
     document.getElementById('producto-registro-cantidad').value = r.cantidad;
     document.getElementById('producto-registro-medida').value = r.medida;
     document.getElementById('producto-registro-precio').value = r.precio;
+    if(document.getElementById('producto-registro-descripcion')) {
+        document.getElementById('producto-registro-descripcion').value = r.descripcion || '';
+    }
+    
+    if (r.medida === 'botella' && r.extraData) {
+        document.getElementById('producto-botella-capacidad').value = r.extraData.capacidad || '';
+        document.getElementById('producto-botella-unidad').value = r.extraData.unidadBotella || 'gramos';
+    } else if (r.medida === 'paquete' && r.extraData) {
+        document.getElementById('producto-paquete-unidades').value = r.extraData.unidades || '';
+    }
+    
+    handleMedidaChange();
     document.getElementById('modal-producto-registro-title').innerText = 'Editar Precio';
     openModal('modal-producto-registro');
 }
