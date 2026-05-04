@@ -353,7 +353,12 @@ function updateAllViews() {
 // 1. PÁGINA PRINCIPAL
 function renderPrincipal() {
     const now = new Date();
-    document.getElementById('current-date-display').innerText = `${t('meses')[now.getMonth()]} ${now.getFullYear()}`;
+    const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const dayName = days[now.getDay()];
+    const datePart = `${now.getDate()}/${months[now.getMonth()]}/${now.getFullYear()}`;
+    
+    document.getElementById('current-date-display').innerText = `${dayName}, ${datePart}`;
     const currentMonthYear = getMonthYear(now.toISOString().split('T')[0]);
 
     // a. Cantidad de helados vendidos (Ventas directas + Pedidos entregados del mes)
