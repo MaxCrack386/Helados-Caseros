@@ -17,7 +17,8 @@
     <div id="login-container" class="login-container">
         <div class="login-box">
             <img src="Logo 2.png" alt="Helados Caseros Logo" class="login-logo" style="width: 250px; max-width: 100%; height: auto;">
-            <h2 data-i18n="app_title" style="margin-bottom: 2rem;">Helados caseros</h2>
+            <h2 data-i18n="app_title" style="margin-bottom: 0.5rem; color: #ff0000; font-weight: 800;">Helados Caseros</h2>
+            <p id="login-date-display" style="font-size: 1.1rem; margin-bottom: 2rem; color: #000; font-weight: 500;"></p>
             <div id="step-google-login">
                 <button id="btn-google-login" class="btn-primary login-btn" onclick="loginWithGoogle()">
                     <i class="fa-brands fa-google"></i> <span data-i18n="btn_login_google">Iniciar sesión con Google</span>
@@ -245,7 +246,7 @@
                         <h1 data-i18n="tab_productos_title">Productos</h1>
                         <p data-i18n="tab_productos_desc">Compara precios e insumos en diferentes tiendas.</p>
                     </div>
-                    <button class="btn-primary" style="background-color: #8B4513;" onclick="abrirModalProducto()">
+                    <button class="btn-primary" style="background-color: #ff0000;" onclick="abrirModalProducto()">
                         <i class="fa-solid fa-plus"></i> <span data-i18n="btn_nuevo_producto">Nuevo Producto</span>
                     </button>
                 </header>
@@ -670,7 +671,7 @@
                     </div>
                     <div class="form-actions">
                         <button type="button" class="btn-secondary" onclick="closeModal('modal-producto')" data-i18n="btn_cancelar">Cancelar</button>
-                        <button type="submit" class="btn-primary" style="background-color: #8B4513;" data-i18n="btn_guardar">Guardar</button>
+                        <button type="submit" class="btn-primary" style="background-color: #ff0000;" data-i18n="btn_guardar">Guardar</button>
                     </div>
                 </form>
             </div>
@@ -686,7 +687,7 @@
             </div>
             <div class="modal-body">
                 <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
-                    <button type="button" class="btn-primary" style="background-color: #8B4513;" onclick="abrirModalRegistroProducto()">
+                    <button type="button" class="btn-primary" style="background-color: #ff0000;" onclick="abrirModalRegistroProducto()">
                         <i class="fa-solid fa-plus"></i> <span data-i18n="btn_nuevo_registro_precio">Nuevo Precio</span>
                     </button>
                 </div>
@@ -724,6 +725,9 @@
                                 <option value="libra">Libra</option>
                                 <option value="botella">Botella</option>
                                 <option value="paquete">Paquete</option>
+                                <option value="barra">Barra</option>
+                                <option value="bolsa">Bolsa</option>
+                                <option value="gramos">Gramos</option>
                             </select>
                         </div>
                     </div>
@@ -745,6 +749,10 @@
                         <label for="producto-paquete-unidades">Unidades por paquete *</label>
                         <input type="number" step="1" min="1" id="producto-paquete-unidades">
                     </div>
+                    <div class="form-group" id="extra-barra-bolsa" style="display: none;">
+                        <label for="producto-barra-bolsa-gramos">Gramos *</label>
+                        <input type="number" step="0.01" min="0.01" id="producto-barra-bolsa-gramos">
+                    </div>
                     <div class="form-group">
                         <label for="producto-registro-precio">Precio * ($)</label>
                         <input type="number" id="producto-registro-precio" min="0" required>
@@ -755,7 +763,7 @@
                     </div>
                     <div class="form-actions">
                         <button type="button" class="btn-secondary" onclick="closeModal('modal-producto-registro')" data-i18n="btn_cancelar">Cancelar</button>
-                        <button type="submit" class="btn-primary" style="background-color: #8B4513;" data-i18n="btn_guardar">Guardar Registro</button>
+                        <button type="submit" class="btn-primary" style="background-color: #ff0000;" data-i18n="btn_guardar">Guardar Registro</button>
                     </div>
                 </form>
             </div>

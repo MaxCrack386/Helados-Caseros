@@ -326,10 +326,14 @@ function updateSidebarDate() {
     const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
     const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     const now = new Date();
-    const dateStr = `${days[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]} de ${now.getFullYear()}`;
+    const dateStr = `${days[now.getDay()]}, ${now.getDate()}/${months[now.getMonth()]}/${now.getFullYear()}`;
     const dateBox = document.getElementById('sidebar-date-box');
     if (dateBox) {
         dateBox.innerText = dateStr;
+    }
+    const loginDateBox = document.getElementById('login-date-display');
+    if (loginDateBox) {
+        loginDateBox.innerText = dateStr;
     }
 }
 
@@ -1901,7 +1905,7 @@ function renderProductos() {
         grid.innerHTML += `
             <div class="card month-card" style="display:flex; justify-content:space-between; align-items:center;" onclick="abrirCajonProducto('${prod.id}')">
                 <div>
-                    <h2 style="margin:0;">${prod.nombre}</h2>
+                    <h2 style="margin:0; color: var(--secondary);">${prod.nombre}</h2>
                     <div class="subtitle"><small>${prod.registros ? prod.registros.length : 0} registros de precios</small></div>
                 </div>
                 <div style="display:flex; gap:0.5rem;" onclick="event.stopPropagation()">
@@ -1954,6 +1958,8 @@ function renderRegistrosProducto() {
             medidaStr += ` (${reg.extraData.capacidad} ${reg.extraData.unidadBotella})`;
         } else if (reg.medida === 'paquete' && reg.extraData) {
             medidaStr += ` (${reg.extraData.unidades} uds)`;
+        } else if ((reg.medida === 'barra' || reg.medida === 'bolsa') && reg.extraData) {
+            medidaStr += ` (${reg.extraData.gramos} g)`;
         }
         let descStr = reg.descripcion ? `<div style="font-size:0.85rem; color:var(--text-muted); margin-top:0.3rem;"><i>${reg.descripcion}</i></div>` : '';
 
@@ -2037,14 +2043,18 @@ function handleMedidaChange() {
     const medida = document.getElementById('producto-registro-medida').value;
     const extraBotella = document.getElementById('extra-botella');
     const extraPaquete = document.getElementById('extra-paquete');
+    const extraBarraBolsa = document.getElementById('extra-barra-bolsa');
     
     if(extraBotella) extraBotella.style.display = 'none';
     if(extraPaquete) extraPaquete.style.display = 'none';
+    if(extraBarraBolsa) extraBarraBolsa.style.display = 'none';
     
     if (medida === 'botella') {
         if(extraBotella) extraBotella.style.display = 'flex';
     } else if (medida === 'paquete') {
         if(extraPaquete) extraPaquete.style.display = 'block';
+    } else if (medida === 'barra' || medida === 'bolsa') {
+        if(extraBarraBolsa) extraBarraBolsa.style.display = 'block';
     }
 }
 
@@ -2072,6 +2082,8 @@ function handleProductoRegistroSubmit(e) {
         extraData.unidadBotella = document.getElementById('producto-botella-unidad').value;
     } else if (medida === 'paquete') {
         extraData.unidades = parseInt(document.getElementById('producto-paquete-unidades').value);
+    } else if (medida === 'barra' || medida === 'bolsa') {
+        extraData.gramos = parseFloat(document.getElementById('producto-barra-bolsa-gramos').value);
     }
 
     const prod = appData.productos.find(p => p.id === activeProductoId);
@@ -2124,6 +2136,8 @@ function editarRegistroProducto(id) {
         document.getElementById('producto-botella-unidad').value = r.extraData.unidadBotella || 'gramos';
     } else if (r.medida === 'paquete' && r.extraData) {
         document.getElementById('producto-paquete-unidades').value = r.extraData.unidades || '';
+    } else if ((r.medida === 'barra' || r.medida === 'bolsa') && r.extraData) {
+        document.getElementById('producto-barra-bolsa-gramos').value = r.extraData.gramos || '';
     }
     
     handleMedidaChange();
