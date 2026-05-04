@@ -326,14 +326,16 @@ function updateSidebarDate() {
     const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
     const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     const now = new Date();
-    const dateStr = `${days[now.getDay()]}, ${now.getDate()}/${months[now.getMonth()]}/${now.getFullYear()}`;
+    const dayName = days[now.getDay()];
+    const datePart = `${now.getDate()}/${months[now.getMonth()]}/${now.getFullYear()}`;
+    
     const dateBox = document.getElementById('sidebar-date-box');
     if (dateBox) {
-        dateBox.innerText = dateStr;
+        dateBox.innerHTML = `${dayName},<br>${datePart}`;
     }
     const loginDateBox = document.getElementById('login-date-display');
     if (loginDateBox) {
-        loginDateBox.innerText = dateStr;
+        loginDateBox.innerText = `${dayName}, ${datePart}`;
     }
 }
 
