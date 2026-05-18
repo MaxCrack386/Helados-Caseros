@@ -78,6 +78,9 @@
                 <button class="nav-btn" data-tab="productos">
                     <i class="fa-solid fa-box"></i> <span data-i18n="nav_productos">Productos</span>
                 </button>
+                <button class="nav-btn" data-tab="notas">
+                    <i class="fa-solid fa-sticky-note"></i> <span data-i18n="nav_notas">Notas</span>
+                </button>
                 <div style="margin-top: auto;">
                     <button class="nav-btn" data-tab="papelera" style="margin-bottom: 1rem;">
                         <i class="fa-solid fa-trash-can"></i> <span data-i18n="nav_papelera">Papelera</span>
@@ -251,6 +254,23 @@
                 </header>
 
                 <div class="months-grid" id="productos-grid">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- Pestaña Notas -->
+            <section id="tab-notas" class="tab-content">
+                <header class="page-header flex-between">
+                    <div>
+                        <h1 data-i18n="tab_notas_title">Notas y Comentarios</h1>
+                        <p data-i18n="tab_notas_desc">Escribe notas, observaciones o comentarios sobre la tienda.</p>
+                    </div>
+                    <button class="btn-primary" style="background-color: #f59e0b;" onclick="abrirModalNota()">
+                        <i class="fa-solid fa-plus"></i> <span data-i18n="btn_nuevo_comentario">Nuevo comentario</span>
+                    </button>
+                </header>
+
+                <div class="orders-list-container" id="notas-list">
                     <!-- Populated by JS -->
                 </div>
             </section>
@@ -763,6 +783,95 @@
                     <div class="form-actions">
                         <button type="button" class="btn-secondary" onclick="closeModal('modal-producto-registro')" data-i18n="btn_cancelar">Cancelar</button>
                         <button type="submit" class="btn-primary" style="background-color: #ff0000;" data-i18n="btn_guardar">Guardar Registro</button>
+                    </div>
+                </form>
+            </div>
+    <!-- Modal: Nueva/Editar Nota -->
+    <div id="modal-nota" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modal-nota-title" data-i18n="modal_nota_title">Nueva Nota</h2>
+                <button type="button" class="close-btn" onclick="closeModal('modal-nota')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-nota" onsubmit="handleNotaSubmit(event)">
+                    <input type="hidden" id="nota-id">
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="nota-dia" data-i18n="label_dia">Día *</label>
+                            <input type="text" id="nota-dia" required placeholder="Ej: Lunes">
+                        </div>
+                        <div class="form-group half">
+                            <label for="nota-fecha" data-i18n="label_fecha">Fecha *</label>
+                            <input type="date" id="nota-fecha" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="nota-titulo" data-i18n="label_titulo">Título *</label>
+                        <input type="text" id="nota-titulo" required placeholder="Ingrese el título">
+                    </div>
+                    <div class="form-group">
+                        <label for="nota-comentario" data-i18n="label_comentario">Comentario *</label>
+                        <textarea id="nota-comentario" rows="4" required style="width: 100%; border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 0.75rem; font-family: inherit; resize: vertical;" placeholder="Escriba la nota o comentario"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeModal('modal-nota')" data-i18n="btn_cancelar">Cancelar</button>
+                        <button type="submit" class="btn-primary" style="background-color: #f59e0b;" data-i18n="btn_guardar">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Detalle de Nota -->
+    <div id="modal-nota-detalle" class="modal-overlay">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h2 id="nota-detalle-titulo">Detalle de la Nota</h2>
+                <button type="button" class="close-btn" onclick="closeModal('modal-nota-detalle')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <!-- Contenido de la nota (Día, Fecha, Título, Comentario) -->
+                <div id="nota-detalle-info" style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-color); margin-bottom: 2rem;">
+                    <!-- Inyectado por JS -->
+                </div>
+                
+                <!-- Sección de Respuestas -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 class="section-title" style="margin: 0; border: none; padding: 0;">Respuestas</h3>
+                    <button class="btn-primary" style="background-color: #f59e0b; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="abrirModalRespuesta()">
+                        <i class="fa-solid fa-reply"></i> <span data-i18n="btn_agregar_respuesta">Agregar respuesta</span>
+                    </button>
+                </div>
+                
+                <div id="nota-respuestas-list" style="display: flex; flex-direction: column; gap: 1rem; max-height: 300px; overflow-y: auto; padding-right: 0.5rem;">
+                    <!-- Inyectadas por JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Nueva/Editar Respuesta -->
+    <div id="modal-respuesta" class="modal-overlay" style="z-index: 110;">
+        <div class="modal" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2 id="modal-respuesta-title" data-i18n="modal_respuesta_title">Agregar Respuesta</h2>
+                <button type="button" class="close-btn" onclick="closeModal('modal-respuesta')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-respuesta" onsubmit="handleRespuestaSubmit(event)">
+                    <input type="hidden" id="respuesta-id">
+                    <div class="form-group">
+                        <label for="respuesta-fecha" data-i18n="label_fecha">Fecha *</label>
+                        <input type="date" id="respuesta-fecha" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="respuesta-nota" data-i18n="label_nota">Nota *</label>
+                        <textarea id="respuesta-nota" rows="3" required style="width: 100%; border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 0.75rem; font-family: inherit; resize: vertical;" placeholder="Escriba su respuesta"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeModal('modal-respuesta')" data-i18n="btn_cancelar">Cancelar</button>
+                        <button type="submit" class="btn-primary" style="background-color: #f59e0b;" data-i18n="btn_guardar">Guardar</button>
                     </div>
                 </form>
             </div>

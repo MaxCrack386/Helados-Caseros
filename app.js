@@ -152,6 +152,7 @@ async function loadData() {
             if(!appData.compras) appData.compras = [];
             if(!appData.pedidos) appData.pedidos = [];
             if(!appData.productos) appData.productos = [];
+            if(!appData.notas) appData.notas = [];
             
             if(appData.pedidos) {
                 appData.pedidos.forEach(p => {
@@ -165,6 +166,7 @@ async function loadData() {
                 appData = JSON.parse(saved);
                 if(!appData.papelera) appData.papelera = [];
                 if(!appData.productos) appData.productos = [];
+                if(!appData.notas) appData.notas = [];
                 if(appData.pedidos) {
                     appData.pedidos.forEach(p => {
                         if(!p.pagos) p.pagos = [];
@@ -247,6 +249,7 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
         if(tabId === 'resumen') renderSummaryChart();
         if(tabId === 'papelera') renderPapelera();
         if(tabId === 'productos') renderProductos();
+        if(tabId === 'notas') renderNotas();
         
         // Desactivar modo eliminar al cambiar de pestaña
         if(deleteMode) cancelDeleteMode(deleteContext);
@@ -348,6 +351,7 @@ function updateAllViews() {
     renderCompras();
     renderResumen();
     renderPapelera();
+    renderNotas();
 }
 
 // 1. PÁGINA PRINCIPAL
@@ -1652,6 +1656,10 @@ function renderPapelera() {
             title = `Precio en ${item.tienda}`;
             subtitle = `${item.cantidad} ${item.medida} - ${formatCurrency(item.precio)}`;
             typeText = `<span class="countdown urgent">Precio</span>`;
+        } else if(item.originalList === 'notas') {
+            title = `Nota: ${item.titulo}`;
+            subtitle = `${item.fecha} | ${item.dia}`;
+            typeText = `<span class="countdown" style="background: #fef3c7; color: #b45309;">Nota</span>`;
         }
         
         list.innerHTML += `
@@ -1727,6 +1735,17 @@ function verItemPapelera(id) {
                     <h4>Precio en ${item.tienda}</h4>
                     <p>Cantidad: ${item.cantidad} ${item.medida}</p>
                     <p>Precio: ${formatCurrency(item.precio)}</p>
+                </div>
+            </div>`;
+    } else if(item.originalList === 'notas') {
+        html = `
+            <div class="detalle-item pedido-item" style="border-left-color: #f59e0b;">
+                <div class="detalle-item-info">
+                    <h4>Nota: ${item.titulo}</h4>
+                    <p>Día: ${item.dia}</p>
+                    <p>Fecha: ${item.fecha}</p>
+                    <p>Comentario: ${item.comentario}</p>
+                    <p>Respuestas asociadas: ${item.respuestas ? item.respuestas.length : 0}</p>
                 </div>
             </div>`;
     }
@@ -2167,5 +2186,253 @@ function eliminarRegistroProducto(id) {
         }
     };
     document.getElementById('confirm-text').innerText = t('confirm_enviar_papelera') || '¿Estás seguro de enviar a la papelera?';
+    openModal('modal-confirmacion');
+}
+
+// ========================
+// NOTAS Y COMENTARIOS
+// ========================
+let activeNotaId = null;
+let editingRespuestaId = null;
+
+function renderNotas() {
+    const list = document.getElementById('notas-list');
+    if(!list) return;
+    list.innerHTML = '';
+
+    if (!appData.notas || appData.notas.length === 0) {
+        list.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No tienes notas guardadas. ¡Crea una nueva!</p>';
+        return;
+    }
+
+    // Ordenar por fecha descendente
+    const sorted = [...appData.notas].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+    sorted.forEach(nota => {
+        list.innerHTML += `
+            <div class="order-card" style="border-left-color: #f59e0b; display: flex; justify-content: space-between; align-items: center;" onclick="verDetalleNota('${nota.id}')">
+                <div class="order-info">
+                    <h3 style="margin: 0; color: var(--text-main); font-size: 1.15rem; font-weight: 700;">${nota.titulo}</h3>
+                    <p style="margin-top: 0.25rem; font-size: 0.9rem; color: var(--text-muted);"><i class="fa-regular fa-calendar"></i> ${nota.fecha} (${nota.dia})</p>
+                </div>
+                <div style="display:flex; gap:0.5rem;" onclick="event.stopPropagation()">
+                    <button class="btn-primary" style="background-color: var(--warning); padding:0.4rem 0.6rem; border-radius:var(--radius-md); border:none; color:white; cursor:pointer;" onclick="editarNota('${nota.id}')">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button class="btn-primary" style="background-color: #ef4444; padding:0.4rem 0.6rem; border-radius:var(--radius-md); border:none; color:white; cursor:pointer;" onclick="eliminarNota('${nota.id}')">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function abrirModalNota() {
+    document.getElementById('form-nota').reset();
+    document.getElementById('nota-id').value = '';
+    document.getElementById('modal-nota-title').innerText = t('btn_nuevo_comentario') || 'Nuevo comentario';
+    
+    // Configurar fecha y día de hoy por defecto
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('nota-fecha').value = today;
+    
+    const daysOfWeek = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const currentDay = daysOfWeek[new Date().getDay()];
+    document.getElementById('nota-dia').value = currentDay;
+    
+    openModal('modal-nota');
+}
+
+function handleNotaSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById('nota-id').value;
+    const dia = document.getElementById('nota-dia').value;
+    const fecha = document.getElementById('nota-fecha').value;
+    const titulo = document.getElementById('nota-titulo').value;
+    const comentario = document.getElementById('nota-comentario').value;
+
+    if(!appData.notas) appData.notas = [];
+
+    if(id) {
+        const n = appData.notas.find(x => x.id === id);
+        if(n) {
+            n.dia = dia;
+            n.fecha = fecha;
+            n.titulo = titulo;
+            n.comentario = comentario;
+        }
+    } else {
+        appData.notas.push({
+            id: generateId(),
+            dia: dia,
+            fecha: fecha,
+            titulo: titulo,
+            comentario: comentario,
+            respuestas: []
+        });
+    }
+    saveData();
+    renderNotas();
+    closeModal('modal-nota');
+    
+    // Si estaba el detalle abierto de esta nota, refrescarlo
+    if(currentModalContext && currentModalContext.type === 'detalle-nota' && currentModalContext.id === id) {
+        verDetalleNota(id);
+    }
+}
+
+function editarNota(id) {
+    const n = appData.notas.find(x => x.id === id);
+    if(!n) return;
+    document.getElementById('nota-id').value = n.id;
+    document.getElementById('nota-dia').value = n.dia;
+    document.getElementById('nota-fecha').value = n.fecha;
+    document.getElementById('nota-titulo').value = n.titulo;
+    document.getElementById('nota-comentario').value = n.comentario;
+    document.getElementById('modal-nota-title').innerText = t('editar') || 'Editar Nota';
+    openModal('modal-nota');
+}
+
+function eliminarNota(id) {
+    pendingDeleteAction = () => {
+        const index = appData.notas.findIndex(x => x.id === id);
+        if (index > -1) {
+            const item = appData.notas.splice(index, 1)[0];
+            item.originalList = 'notas';
+            appData.papelera.push(item);
+            saveData();
+            renderNotas();
+            closeModal('modal-nota-detalle');
+        }
+    };
+    document.getElementById('confirm-text').innerText = t('confirm_enviar_papelera') || '¿Estás seguro de enviar a la papelera?';
+    openModal('modal-confirmacion');
+}
+
+function verDetalleNota(id) {
+    activeNotaId = id;
+    currentModalContext = { type: 'detalle-nota', id: id };
+    const n = appData.notas.find(x => x.id === id);
+    if(!n) return;
+
+    document.getElementById('nota-detalle-titulo').innerText = n.titulo;
+    
+    document.getElementById('nota-detalle-info').innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
+            <span class="countdown" style="background: #fef3c7; color: #b45309; font-weight: 600;">${n.fecha} (${n.dia})</span>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="btn-primary" style="background-color: var(--warning); padding: 0.4rem 0.8rem; font-size: 0.9rem;" onclick="editarNota('${n.id}')">
+                    <i class="fa-solid fa-pen"></i> ${t('editar') || 'Editar'}
+                </button>
+                <button class="btn-primary" style="background-color: #ef4444; padding: 0.4rem 0.8rem; font-size: 0.9rem;" onclick="eliminarNota('${n.id}')">
+                    <i class="fa-solid fa-trash"></i> ${t('eliminar') || 'Eliminar'}
+                </button>
+            </div>
+        </div>
+        <p style="font-size: 1.05rem; line-height: 1.6; white-space: pre-wrap; color: var(--text-main); font-weight: 400; margin: 0;">${n.comentario}</p>
+    `;
+
+    renderRespuestasNota();
+    openModal('modal-nota-detalle');
+}
+
+function renderRespuestasNota() {
+    const container = document.getElementById('nota-respuestas-list');
+    if(!container) return;
+    container.innerHTML = '';
+    
+    const n = appData.notas.find(x => x.id === activeNotaId);
+    if(!n || !n.respuestas || n.respuestas.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">No hay respuestas en este comentario.</p>';
+        return;
+    }
+
+    // Respuestas por orden cronológico
+    const sorted = [...n.respuestas].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+
+    sorted.forEach(resp => {
+        container.innerHTML += `
+            <div class="respuesta-item">
+                <div class="respuesta-header">
+                    <span style="font-weight: 600; display: flex; align-items: center; gap: 0.25rem;"><i class="fa-regular fa-calendar"></i> ${resp.fecha}</span>
+                    <div class="respuesta-actions">
+                        <button class="btn-edit" onclick="editarRespuesta('${resp.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn-delete" onclick="eliminarRespuesta('${resp.id}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+                <div class="respuesta-body">${resp.nota}</div>
+            </div>
+        `;
+    });
+}
+
+function abrirModalRespuesta() {
+    document.getElementById('form-respuesta').reset();
+    document.getElementById('respuesta-id').value = '';
+    document.getElementById('modal-respuesta-title').innerText = t('btn_agregar_respuesta') || 'Agregar respuesta';
+    
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('respuesta-fecha').value = today;
+    
+    openModal('modal-respuesta');
+}
+
+function handleRespuestaSubmit(e) {
+    e.preventDefault();
+    if(!activeNotaId) return;
+    const id = document.getElementById('respuesta-id').value;
+    const fecha = document.getElementById('respuesta-fecha').value;
+    const notaText = document.getElementById('respuesta-nota').value;
+
+    const n = appData.notas.find(x => x.id === activeNotaId);
+    if(!n) return;
+    if(!n.respuestas) n.respuestas = [];
+
+    if(id) {
+        const r = n.respuestas.find(x => x.id === id);
+        if(r) {
+            r.fecha = fecha;
+            r.nota = notaText;
+        }
+    } else {
+        n.respuestas.push({
+            id: generateId(),
+            fecha: fecha,
+            nota: notaText
+        });
+    }
+    saveData();
+    renderRespuestasNota();
+    closeModal('modal-respuesta');
+}
+
+function editarRespuesta(id) {
+    const n = appData.notas.find(x => x.id === activeNotaId);
+    if(!n) return;
+    const r = n.respuestas.find(x => x.id === id);
+    if(!r) return;
+
+    document.getElementById('respuesta-id').value = r.id;
+    document.getElementById('respuesta-fecha').value = r.fecha;
+    document.getElementById('respuesta-nota').value = r.nota;
+    document.getElementById('modal-respuesta-title').innerText = t('editar') || 'Editar Respuesta';
+    
+    openModal('modal-respuesta');
+}
+
+function eliminarRespuesta(id) {
+    pendingDeleteAction = () => {
+        const n = appData.notas.find(x => x.id === activeNotaId);
+        if (n) {
+            const index = n.respuestas.findIndex(x => x.id === id);
+            if (index > -1) {
+                n.respuestas.splice(index, 1);
+                saveData();
+                renderRespuestasNota();
+            }
+        }
+    };
+    document.getElementById('confirm-text').innerText = t('modal_confirm_text') || '¿Estás seguro de que quieres eliminar este registro?';
     openModal('modal-confirmacion');
 }

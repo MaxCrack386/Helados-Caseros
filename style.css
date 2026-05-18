@@ -155,6 +155,15 @@ body {
 }
 .nav-btn.active[data-tab="productos"] i { color: white; }
 
+.nav-btn[data-tab="notas"] i { color: #f59e0b; }
+.nav-btn:hover[data-tab="notas"] i { color: #d97706; }
+.nav-btn.active[data-tab="notas"] {
+    background-color: #f59e0b;
+    color: white;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+.nav-btn.active[data-tab="notas"] i { color: white; }
+
 /* Main Content */
 .main-content {
     flex: 1;
@@ -943,5 +952,64 @@ body {
     width: 100%;
     font-size: 1.1rem;
     padding: 0.8rem 1.5rem;
+}
+
+/* --- SECCIÓN RESPUESTAS NOTAS --- */
+.respuesta-item {
+    background: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.respuesta-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.respuesta-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.respuesta-body {
+    color: var(--text-main);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.respuesta-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.respuesta-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    padding: 0.2rem;
+    transition: color 0.2s;
+}
+
+.respuesta-actions .btn-edit {
+    color: var(--warning);
+}
+.respuesta-actions .btn-edit:hover {
+    color: #d97706;
+}
+.respuesta-actions .btn-delete {
+    color: #ef4444;
+}
+.respuesta-actions .btn-delete:hover {
+    color: #dc2626;
 }
 

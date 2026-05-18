@@ -140,7 +140,18 @@ const translations = {
         desc_fiado: "Pago pendiente",
         btn_guardar_fiado: "Guardar Fiado",
         btn_login_google: "Iniciar sesión con Google",
-        error_login: "Error al iniciar sesión. (¿Estás usando file:// o localhost sin autorizar?)"
+        error_login: "Error al iniciar sesión. (¿Estás usando file:// o localhost sin autorizar?)",
+        nav_notas: "Notas",
+        tab_notas_title: "Notas y Comentarios",
+        tab_notas_desc: "Escribe notas, observaciones o comentarios sobre la tienda.",
+        btn_nuevo_comentario: "Nuevo comentario",
+        modal_nota_title: "Nota / Comentario",
+        label_dia: "Día",
+        label_titulo: "Título",
+        label_comentario: "Comentario",
+        btn_agregar_respuesta: "Agregar respuesta",
+        modal_respuesta_title: "Respuesta",
+        label_nota: "Nota"
     },
     en: {
         // Static
@@ -283,7 +294,18 @@ const translations = {
         desc_fiado: "Pending payment",
         btn_guardar_fiado: "Save Credit Sale",
         btn_login_google: "Sign in with Google",
-        error_login: "Login error. (Are you using file:// or unauthorized localhost?)"
+        error_login: "Login error. (Are you using file:// or unauthorized localhost?)",
+        nav_notas: "Notes",
+        tab_notas_title: "Notes and Comments",
+        tab_notas_desc: "Write notes, observations or comments about the store.",
+        btn_nuevo_comentario: "New comment",
+        modal_nota_title: "Note / Comment",
+        label_dia: "Day",
+        label_titulo: "Title",
+        label_comentario: "Comment",
+        btn_agregar_respuesta: "Add response",
+        modal_respuesta_title: "Response",
+        label_nota: "Note"
     }
 };
 
