@@ -151,7 +151,17 @@ const translations = {
         label_comentario: "Comentario",
         btn_agregar_respuesta: "Agregar respuesta",
         modal_respuesta_title: "Respuesta",
-        label_nota: "Nota"
+        label_nota: "Nota",
+        nav_recetas: "Recetas",
+        tab_recetas_title: "Recetas de Helados",
+        tab_recetas_desc: "Gestiona las recetas de tus helados.",
+        btn_nueva_receta: "Nueva Receta",
+        modal_receta_title: "Nueva Receta",
+        label_sabor: "Sabor",
+        label_ingredientes: "Ingredientes",
+        label_procedimiento: "Procedimiento",
+        label_ingrediente: "Ingrediente",
+        label_rinde_helados: "Rinde (helados)"
     },
     en: {
         // Static
@@ -305,7 +315,17 @@ const translations = {
         label_comentario: "Comment",
         btn_agregar_respuesta: "Add response",
         modal_respuesta_title: "Response",
-        label_nota: "Note"
+        label_nota: "Note",
+        nav_recetas: "Recipes",
+        tab_recetas_title: "Ice Cream Recipes",
+        tab_recetas_desc: "Manage your ice cream recipes.",
+        btn_nueva_receta: "New Recipe",
+        modal_receta_title: "New Recipe",
+        label_sabor: "Flavor",
+        label_ingredientes: "Ingredients",
+        label_procedimiento: "Procedure",
+        label_ingrediente: "Ingredient",
+        label_rinde_helados: "Yields (ice creams)"
     }
 };
 

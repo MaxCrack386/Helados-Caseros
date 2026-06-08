@@ -155,6 +155,15 @@ body {
 }
 .nav-btn.active[data-tab="productos"] i { color: white; }
 
+.nav-btn[data-tab="recetas"] i { color: #8b5cf6; }
+.nav-btn:hover[data-tab="recetas"] i { color: #7c3aed; }
+.nav-btn.active[data-tab="recetas"] {
+    background-color: #8b5cf6;
+    color: white;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+.nav-btn.active[data-tab="recetas"] i { color: white; }
+
 .nav-btn[data-tab="notas"] i { color: #f59e0b; }
 .nav-btn:hover[data-tab="notas"] i { color: #d97706; }
 .nav-btn.active[data-tab="notas"] {
@@ -1011,5 +1020,41 @@ body {
 }
 .respuesta-actions .btn-delete:hover {
     color: #dc2626;
+}
+
+/* --- TABLA DE INGREDIENTES EN RECETAS --- */
+.receta-tabla-ingredientes th {
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.receta-tabla-ingredientes td {
+    padding: 0.5rem;
+    vertical-align: middle;
+}
+
+.receta-tabla-ingredientes input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.receta-tabla-ingredientes input:focus {
+    border-color: #8b5cf6;
+}
+
+.receta-tabla-ingredientes tr {
+    transition: background-color 0.2s;
+}
+
+.receta-tabla-ingredientes tbody tr:hover {
+    background-color: rgba(139, 92, 246, 0.03);
 }
 

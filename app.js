@@ -34,7 +34,8 @@ let appData = {
     compras: [],
     pedidos: [],
     papelera: [],
-    productos: []
+    productos: [],
+    recetas: []
 };
 
 let deleteMode = false;
@@ -153,6 +154,7 @@ async function loadData() {
             if(!appData.pedidos) appData.pedidos = [];
             if(!appData.productos) appData.productos = [];
             if(!appData.notas) appData.notas = [];
+            if(!appData.recetas) appData.recetas = [];
             
             if(appData.pedidos) {
                 appData.pedidos.forEach(p => {
@@ -165,8 +167,9 @@ async function loadData() {
             if (saved) {
                 appData = JSON.parse(saved);
                 if(!appData.papelera) appData.papelera = [];
-                if(!appData.productos) appData.productos = [];
-                if(!appData.notas) appData.notas = [];
+                 if(!appData.productos) appData.productos = [];
+                 if(!appData.notas) appData.notas = [];
+                 if(!appData.recetas) appData.recetas = [];
                 if(appData.pedidos) {
                     appData.pedidos.forEach(p => {
                         if(!p.pagos) p.pagos = [];
@@ -249,6 +252,7 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
         if(tabId === 'resumen') renderSummaryChart();
         if(tabId === 'papelera') renderPapelera();
         if(tabId === 'productos') renderProductos();
+        if(tabId === 'recetas') renderRecetas();
         if(tabId === 'notas') renderNotas();
         
         // Desactivar modo eliminar al cambiar de pestaña
@@ -352,6 +356,7 @@ function updateAllViews() {
     renderResumen();
     renderPapelera();
     renderNotas();
+    renderRecetas();
 }
 
 // 1. PÁGINA PRINCIPAL
@@ -1660,6 +1665,10 @@ function renderPapelera() {
             title = `Nota: ${item.titulo}`;
             subtitle = `${item.fecha} | ${item.dia}`;
             typeText = `<span class="countdown" style="background: #fef3c7; color: #b45309;">Nota</span>`;
+        } else if(item.originalList === 'recetas') {
+            title = `Receta: ${item.sabor}`;
+            subtitle = `${item.ingredientes ? item.ingredientes.length : 0} ingredientes - Rinde ${item.cantidad} helados`;
+            typeText = `<span class="countdown" style="background: #e0e7ff; color: #4338ca;">Receta</span>`;
         }
         
         list.innerHTML += `
@@ -1746,6 +1755,23 @@ function verItemPapelera(id) {
                     <p>Fecha: ${item.fecha}</p>
                     <p>Comentario: ${item.comentario}</p>
                     <p>Respuestas asociadas: ${item.respuestas ? item.respuestas.length : 0}</p>
+                </div>
+            </div>`;
+    } else if(item.originalList === 'recetas') {
+        let ingredsHtml = '';
+        if(item.ingredientes && item.ingredientes.length > 0) {
+            ingredsHtml = '<ul>' + item.ingredientes.map(i => `<li>${i.nombre}: ${i.cantidad}</li>`).join('') + '</ul>';
+        } else {
+            ingredsHtml = 'Ninguno';
+        }
+        html = `
+            <div class="detalle-item pedido-item" style="border-left-color: #8b5cf6;">
+                <div class="detalle-item-info">
+                    <h4>Receta de ${item.sabor}</h4>
+                    <p>Cantidad: ${item.cantidad} helados</p>
+                    <p>Procedimiento: ${item.procedimiento}</p>
+                    <p>Ingredientes:</p>
+                    ${ingredsHtml}
                 </div>
             </div>`;
     }
@@ -2434,5 +2460,200 @@ function eliminarRespuesta(id) {
         }
     };
     document.getElementById('confirm-text').innerText = t('modal_confirm_text') || '¿Estás seguro de que quieres eliminar este registro?';
+    openModal('modal-confirmacion');
+}
+
+// ========================
+// RECETAS DE HELADOS
+// ========================
+
+function renderRecetas() {
+    const grid = document.getElementById('recetas-grid');
+    if(!grid) return;
+    grid.innerHTML = '';
+
+    if (!appData.recetas || appData.recetas.length === 0) {
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">No tienes recetas guardadas. ¡Crea una nueva!</p>';
+        return;
+    }
+
+    appData.recetas.forEach(receta => {
+        grid.innerHTML += `
+            <div class="card month-card" style="display:flex; justify-content:space-between; align-items:center;" onclick="abrirDetalleReceta('${receta.id}')">
+                <div>
+                    <h2 style="margin:0; color: #8b5cf6;">${receta.sabor}</h2>
+                    <div class="subtitle"><small>${receta.ingredientes ? receta.ingredientes.length : 0} ingredientes | Rinde ${receta.cantidad} helados</small></div>
+                </div>
+                <div style="display:flex; gap:0.5rem;" onclick="event.stopPropagation()">
+                    <button class="btn-primary" style="background-color: var(--warning); padding:0.4rem 0.6rem; border-radius:var(--radius-md); border:none; color:white; cursor:pointer;" onclick="editarReceta('${receta.id}')" title="Editar">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button class="btn-primary" style="background-color: #ef4444; padding:0.4rem 0.6rem; border-radius:var(--radius-md); border:none; color:white; cursor:pointer;" onclick="eliminarReceta('${receta.id}')" title="Eliminar">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function abrirModalReceta() {
+    document.getElementById('form-receta').reset();
+    document.getElementById('receta-id').value = '';
+    document.getElementById('receta-ingredientes-tbody').innerHTML = '';
+    document.getElementById('modal-receta-title').innerText = 'Registrar nueva receta';
+    agregarFilaIngrediente();
+    openModal('modal-receta');
+}
+
+function agregarFilaIngrediente(nombre = '', cantidad = '') {
+    const tbody = document.getElementById('receta-ingredientes-tbody');
+    if (!tbody) return;
+    const rowId = 'ingrediente-row-' + generateId();
+    const tr = document.createElement('tr');
+    tr.id = rowId;
+    tr.innerHTML = `
+        <td style="padding: 0.5rem;"><input type="text" class="ingrediente-nombre" placeholder="Nombre..." value="${nombre}" required></td>
+        <td style="padding: 0.5rem;"><input type="text" class="ingrediente-cantidad" placeholder="Cantidad..." value="${cantidad}" required></td>
+        <td style="padding: 0.5rem; text-align: center;">
+            <button type="button" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1.1rem;" onclick="document.getElementById('${rowId}').remove()"><i class="fa-solid fa-trash"></i></button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+}
+
+function handleRecetaSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById('receta-id').value;
+    const sabor = document.getElementById('receta-sabor').value;
+    const cantidad = parseInt(document.getElementById('receta-cantidad').value);
+    const procedimiento = document.getElementById('receta-procedimiento').value;
+
+    const ingredientes = [];
+    const tbody = document.getElementById('receta-ingredientes-tbody');
+    if (tbody) {
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach(row => {
+            const nombreInput = row.querySelector('.ingrediente-nombre');
+            const cantInput = row.querySelector('.ingrediente-cantidad');
+            if (nombreInput && cantInput) {
+                const nombre = nombreInput.value.trim();
+                const cant = cantInput.value.trim();
+                if (nombre || cant) {
+                    ingredientes.push({ nombre, cantidad: cant });
+                }
+            }
+        });
+    }
+
+    if (!appData.recetas) appData.recetas = [];
+
+    if (id) {
+        const r = appData.recetas.find(x => x.id === id);
+        if (r) {
+            r.sabor = sabor;
+            r.cantidad = cantidad;
+            r.procedimiento = procedimiento;
+            r.ingredientes = ingredientes;
+        }
+    } else {
+        appData.recetas.push({
+            id: generateId(),
+            sabor,
+            cantidad,
+            procedimiento,
+            ingredientes
+        });
+    }
+
+    saveData();
+    renderRecetas();
+    closeModal('modal-receta');
+
+    if (currentModalContext && currentModalContext.type === 'detalle-receta' && currentModalContext.id === id) {
+        abrirDetalleReceta(id);
+    }
+}
+
+function abrirDetalleReceta(id) {
+    currentModalContext = { type: 'detalle-receta', id: id };
+    const receta = appData.recetas.find(r => r.id === id);
+    if (!receta) return;
+
+    document.getElementById('receta-detalle-sabor').innerText = receta.sabor;
+    document.getElementById('receta-detalle-rinde').innerText = `Rinde: ${receta.cantidad} helados`;
+
+    const container = document.getElementById('receta-detalle-ingredientes-list');
+    container.innerHTML = '';
+
+    if (receta.ingredientes && receta.ingredientes.length > 0) {
+        receta.ingredientes.forEach(ing => {
+            container.innerHTML += `
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem 1rem; color: var(--text-main); font-weight: 500;">${ing.nombre}</td>
+                    <td style="padding: 0.75rem 1rem; color: var(--text-muted);">${ing.cantidad}</td>
+                </tr>
+            `;
+        });
+    } else {
+        container.innerHTML = `
+            <tr>
+                <td colspan="2" style="padding: 1rem; text-align: center; color: var(--text-muted);">Sin ingredientes registrados.</td>
+            </tr>
+        `;
+    }
+
+    document.getElementById('receta-detalle-procedimiento').innerText = receta.procedimiento;
+
+    const actionsContainer = document.getElementById('receta-detalle-actions');
+    actionsContainer.innerHTML = `
+        <button class="btn-primary" style="background-color: var(--warning); padding: 0.4rem 0.8rem; font-size: 0.9rem;" onclick="editarReceta('${receta.id}')">
+            <i class="fa-solid fa-pen"></i> ${t('editar')}
+        </button>
+        <button class="btn-primary" style="background-color: #ef4444; padding: 0.4rem 0.8rem; font-size: 0.9rem;" onclick="eliminarReceta('${receta.id}')">
+            <i class="fa-solid fa-trash"></i> ${t('eliminar')}
+        </button>
+    `;
+
+    openModal('modal-receta-detalle');
+}
+
+function editarReceta(id) {
+    const r = appData.recetas.find(x => x.id === id);
+    if (!r) return;
+
+    document.getElementById('receta-id').value = r.id;
+    document.getElementById('receta-sabor').value = r.sabor;
+    document.getElementById('receta-cantidad').value = r.cantidad;
+    document.getElementById('receta-procedimiento').value = r.procedimiento;
+
+    const tbody = document.getElementById('receta-ingredientes-tbody');
+    tbody.innerHTML = '';
+    
+    if (r.ingredientes && r.ingredientes.length > 0) {
+        r.ingredientes.forEach(ing => {
+            agregarFilaIngrediente(ing.nombre, ing.cantidad);
+        });
+    } else {
+        agregarFilaIngrediente();
+    }
+
+    document.getElementById('modal-receta-title').innerText = 'Editar Receta';
+    openModal('modal-receta');
+}
+
+function eliminarReceta(id) {
+    pendingDeleteAction = () => {
+        const index = appData.recetas.findIndex(x => x.id === id);
+        if (index > -1) {
+            const item = appData.recetas.splice(index, 1)[0];
+            item.originalList = 'recetas';
+            appData.papelera.push(item);
+            saveData();
+            renderRecetas();
+            closeModal('modal-receta-detalle');
+        }
+    };
+    document.getElementById('confirm-text').innerText = t('confirm_enviar_papelera') || '¿Estás seguro de enviar a la papelera?';
     openModal('modal-confirmacion');
 }
